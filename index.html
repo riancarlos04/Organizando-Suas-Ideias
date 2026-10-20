@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Organizando Seus Conhecimentos</title>
+  <meta name="description" content="Organize seus estudos. Entenda o conteúdo. Aprenda de verdade!">
+  <meta name="theme-color" content="#7B2CBF">
+
+  <!-- Arquivos que deixam o site "virar app" no celular (PWA) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icones/icone-apple.png">
+
+  <!-- Letra manuscrita da saudação ("Olá, estudante!"), como nos slides -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap">
+
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+  <!-- Barra roxa do topo -->
+  <header class="topo">
+    <button class="botao-gaveta" id="abrir-menu" type="button" aria-label="Abrir menu" aria-controls="gaveta" aria-expanded="false" hidden>
+      <span></span><span></span><span></span>
+    </button>
+    <a class="topo-nome" href="#/inicio">Organizando Seus Conhecimentos</a>
+  </header>
+
+  <!-- Progresso do aluno: logo abaixo da barra roxa, no canto direito (como no slide).
+       Junta assuntos riscados e metas cumpridas (js/progresso.js). -->
+  <div class="faixa-progresso" id="faixa-progresso" hidden>
+    <div class="progresso-caixa">
+      <span class="progresso-titulo">Seu progresso</span>
+      <div class="progresso-linha">
+        <div class="barra barra-grande" role="progressbar" aria-label="Seu progresso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <i id="progresso-barra" style="width: 0%"></i>
+        </div>
+        <strong id="progresso-numero">0%</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MENU LATERAL (gaveta que abre pelo botão ☰) ========== -->
+  <div class="fundo-gaveta" id="fundo-gaveta" hidden></div>
+  <aside class="gaveta" id="gaveta" aria-label="Menu" hidden>
+    <div class="gaveta-topo">
+      <img src="icones/logo.png" alt="" width="480" height="443">
+      <strong>Organizando Seus Conhecimentos</strong>
+      <button class="fechar-gaveta" id="fechar-menu" type="button" aria-label="Fechar menu">×</button>
+    </div>
+
+    <nav class="menu-lateral" data-menu="aluno" aria-label="Menu do aluno">
+      <a href="#/aluno">Início</a>
+      <a href="#/aluno/cronograma">Cronograma</a>
+      <a href="#/aluno/metas">Minhas metas</a>
+      <a href="#/aluno/resumos">Resumos</a>
+      <a href="#/aluno/questionarios">Questionários <small>Etapa 6</small></a>
+      <a href="#/aluno/desempenho">Meu desempenho</a>
+    </nav>
+
+    <nav class="menu-lateral" data-menu="professor" aria-label="Menu do professor">
+      <a href="#/professor">Início</a>
+      <a href="#/professor/atividade">Criar atividade <small>Etapa 8</small></a>
+      <a href="#/professor/prova">Criar prova <small>Etapa 9</small></a>
+      <a href="#/professor/plano">Plano de aula <small>Etapa 9</small></a>
+      <a href="#/professor/reforco">Reforço <small>Etapa 10</small></a>
+      <a href="#/professor/notas">Notas e dificuldades <small>Etapa 10</small></a>
+    </nav>
+
+    <div class="gaveta-rodape">
+      <p class="credito" data-menu="professor">Com ideias do projeto EduFácil</p>
+      <a class="botao-trocar" href="#/inicio">Trocar perfil</a>
+    </div>
+  </aside>
+
+  <main class="conteudo">
+
+    <!-- ========== TELA 1: escolha de perfil ========== -->
+    <section data-tela="inicio" class="tela tela-inicio">
+      <img class="logo" src="icones/logo.png" alt="" width="480" height="443">
+      <h1 tabindex="-1">Organizando Seus Conhecimentos</h1>
+      <p class="slogan">Organize seus estudos. Entenda o conteúdo. Aprenda de verdade!</p>
+
+      <div class="perfis">
+        <a class="botao-perfil" href="#/aluno">
+          <strong>Sou aluno</strong>
+          <span>Cronograma, resumos e questionários</span>
+        </a>
+        <a class="botao-perfil" href="#/professor">
+          <strong>Sou professor</strong>
+          <span>Atividades, provas e planos de aula</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ========== TELA 2: início do aluno ========== -->
+    <section data-tela="aluno" class="tela tela-central" hidden>
+      <h1 tabindex="-1" class="saudacao">Olá, estudante!</h1>
+      <!-- Busca: filtra matérias e assuntos (Etapa 2). Enter pede um resumo à IA (Etapa 5). -->
+      <label class="busca" for="busca-aluno">
+        <span class="lupa" aria-hidden="true"></span>
+        <input id="busca-aluno" type="search" placeholder="Vamos organizar seus conhecimentos?" autocomplete="off">
+      </label>
+      <ul class="resultados-busca" id="resultados-busca" aria-live="polite" hidden></ul>
+      <p class="dica">Digite para procurar suas matérias e assuntos, ou aperte Enter para pedir um resumo à IA.</p>
+    </section>
+
+    <!-- ========== TELA: metas do aluno (Etapa 3) ========== -->
+    <section data-tela="aluno/metas" class="tela tela-metas" hidden>
+      <h1 tabindex="-1">Minhas metas</h1>
+      <form class="nova-meta" id="form-meta">
+        <label for="meta-texto">Qual é a sua meta?</label>
+        <input id="meta-texto" type="text" maxlength="120" placeholder="Escreva sua meta" autocomplete="off">
+        <div class="prazo-linha">
+          <label class="marcar" for="meta-tem-prazo"><input type="checkbox" id="meta-tem-prazo"> Tem prazo</label>
+          <input type="date" id="meta-prazo" aria-label="Data do prazo" hidden>
+        </div>
+        <button type="submit" class="botao-acao">Criar meta</button>
+      </form>
+      <div class="lista-de-metas" id="lista-metas"></div>
+    </section>
+
+    <!-- ========== TELA: resumos com IA (Etapa 5) ========== -->
+    <section data-tela="aluno/resumos" class="tela tela-resumos" id="tela-resumos" hidden>
+      <h1 tabindex="-1">Resumos</h1>
+
+      <form class="form-resumo" id="form-resumo">
+        <label for="resumo-assunto">Assunto</label>
+        <input id="resumo-assunto" type="text" maxlength="200" placeholder="Ex.: Revolução Francesa" autocomplete="off">
+
+        <label for="resumo-materia">Matéria <small>(opcional)</small></label>
+        <select id="resumo-materia"></select>
+
+        <label for="resumo-texto">Texto para resumir <small>(opcional)</small></label>
+        <textarea id="resumo-texto" rows="5" maxlength="12000" placeholder="Cole aqui o texto do livro ou do caderno. Se deixar vazio, a IA faz um resumo próprio sobre o assunto."></textarea>
+
+        <fieldset class="tipos">
+          <legend>Tipo de resumo</legend>
+          <label><input type="radio" name="tipo-resumo" value="curto" checked> Resumo curto</label>
+          <label><input type="radio" name="tipo-resumo" value="detalhado"> Resumo detalhado</label>
+          <label><input type="radio" name="tipo-resumo" value="conceitos"> Principais conceitos</label>
+          <label><input type="radio" name="tipo-resumo" value="palavras"> Palavras-chave</label>
+          <label><input type="radio" name="tipo-resumo" value="simples"> Explicação simplificada</label>
+          <label><input type="radio" name="tipo-resumo" value="exemplos"> Exemplos práticos</label>
+        </fieldset>
+
+        <button type="submit" class="botao-acao" id="botao-gerar">Gerar resumo</button>
+      </form>
+
+      <!-- Aparece quando a IA pede o código de acesso da escola -->
+      <form class="caixa-codigo" id="form-codigo" hidden>
+        <label for="codigo-escola">Código da escola</label>
+        <p>Peça o código ao professor. Ele fica guardado neste aparelho.</p>
+        <div class="linha-codigo">
+          <input id="codigo-escola" type="password" autocomplete="off">
+          <button type="submit" class="botao-acao">Salvar código</button>
+        </div>
+      </form>
+
+      <!-- Resumo gerado ou aberto (montado pelo arquivo js/resumos.js) -->
+      <div id="resumo-resultado" aria-live="polite"></div>
+
+      <section class="bloco">
+        <h2>Meus resumos</h2>
+        <div id="lista-resumos"></div>
+      </section>
+    </section>
+
+    <!-- ========== TELA: painel "Meu desempenho" (Etapa 4) ========== -->
+    <section data-tela="aluno/desempenho" class="tela tela-desempenho" hidden>
+      <h1 tabindex="-1">Meu desempenho</h1>
+      <!-- Montado pelo arquivo js/progresso.js -->
+      <div class="painel-desempenho" id="painel-desempenho"></div>
+    </section>
+
+    <!-- ========== TELA: cronograma do aluno (Etapa 2) ========== -->
+    <section data-tela="aluno/cronograma" class="tela tela-cronograma" hidden>
+      <h1 tabindex="-1">Cronograma</h1>
+      <div class="abas" role="tablist" aria-label="Partes do cronograma">
+        <button type="button" role="tab" id="aba-semana" aria-controls="painel-semana" aria-selected="true">Minha semana</button>
+        <button type="button" role="tab" id="aba-materias" aria-controls="painel-materias" aria-selected="false">Matérias e assuntos</button>
+      </div>
+      <!-- O conteúdo destes dois painéis é montado pelo arquivo js/cronograma.js -->
+      <div id="painel-semana" role="tabpanel" aria-labelledby="aba-semana"></div>
+      <div id="painel-materias" role="tabpanel" aria-labelledby="aba-materias" hidden></div>
+    </section>
+
+    <!-- ========== TELA 3: início do professor ========== -->
+    <section data-tela="professor" class="tela tela-central" hidden>
+      <h1 tabindex="-1" class="saudacao">Olá, professor!</h1>
+      <label class="busca" for="busca-professor">
+        <span class="lupa" aria-hidden="true"></span>
+        <input id="busca-professor" type="search" placeholder="Vamos organizar seus projetos?" disabled>
+      </label>
+      <p class="dica">A busca e as perguntas à IA chegam nas próximas etapas. Use o menu ☰ para navegar.</p>
+    </section>
+
+    <!-- ========== TELA 4: "em construção" (serve para todos os itens do menu) ========== -->
+    <section data-tela="em-breve" class="tela tela-em-breve" hidden>
+      <p class="etiqueta" id="em-breve-etapa">Etapa ?</p>
+      <h1 tabindex="-1" id="em-breve-titulo">Em construção</h1>
+      <p>Essa parte do app ainda vai ser construída pela turma.</p>
+      <a class="botao-voltar" id="em-breve-voltar" href="#/inicio">Voltar ao início</a>
+    </section>
+
+  </main>
+
+  <!-- Barra do cronômetro: aparece embaixo enquanto o aluno estuda -->
+  <div class="cronometro" id="cronometro" role="region" aria-label="Estudo em andamento" hidden>
+    <div class="cronometro-info">
+      <span>Estudando</span>
+      <strong id="cronometro-materia"></strong>
+    </div>
+    <span class="cronometro-tempo" id="cronometro-tempo">00:00</span>
+    <button type="button" class="botao-acao" id="cronometro-terminei">Terminei</button>
+    <button type="button" class="cronometro-cancelar" id="cronometro-cancelar">Cancelar</button>
+  </div>
+
+  <!-- Mensagem que aparece embaixo (parabéns pela meta, estudo registrado...) -->
+  <div class="parabens" id="parabens" role="status" aria-live="polite" hidden>
+    <strong id="parabens-titulo">Parabéns!</strong>
+    <span id="parabens-texto"></span>
+  </div>
+
+  <footer class="rodape">
+    <p>Projeto da Turma A · Ideia de Millena Vitória e Vanusa Macedo</p>
+    <p>Versão de teste · Etapa 5</p>
+  </footer>
+
+  <script src="js/cronograma.js"></script>
+  <script src="js/metas.js"></script>
+  <script src="js/progresso.js"></script>
+  <script src="js/resumos.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# Configurações locais da Vercel e chaves (nunca vão para o GitHub)
+.vercel
+.env
+.env.*
+
+# Arquivos do sistema
+Thumbs.db
+desktop.ini
+.DS_Store
