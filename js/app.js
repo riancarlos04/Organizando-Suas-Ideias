@@ -60,6 +60,12 @@ function mostrarTela() {
   const perfil = rota.split('/')[0];
   const temPerfil = perfil === 'aluno' || perfil === 'professor';
 
+  // Primeira vez do aluno: cadastro rápido antes de tudo (arquivo perfil.js)
+  if (perfil === 'aluno' && !temPerfilAluno() && rota !== 'aluno/perfil') {
+    location.replace('#/aluno/perfil');
+    return;
+  }
+
   let tela = rota;
   const pagina = EM_BREVE[rota];
   if (pagina) {
@@ -101,6 +107,9 @@ function mostrarTela() {
   if (tela === 'aluno/desempenho') desenharDesempenho();
   if (tela === 'aluno/resumos') desenharResumos();
   if (tela === 'aluno/questionarios') desenharQuestionarios();
+  if (tela === 'aluno/perfil') desenharPerfil();
+  if (tela === 'aluno') atualizarSaudacao();
+  preencherNivelDosFormularios();
   mostrarCronometro();
 
   // Leva o leitor de tela e o foco para o título da tela nova

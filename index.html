@@ -45,6 +45,7 @@
       <a href="#/aluno/resumos">Resumos</a>
       <a href="#/aluno/questionarios">Questionários</a>
       <a href="#/aluno/desempenho">Meu desempenho</a>
+      <a href="#/aluno/perfil">Meu perfil</a>
     </nav>
 
     <nav class="menu-lateral" data-menu="professor" aria-label="Menu do professor">
@@ -84,7 +85,7 @@
 
     <!-- ========== TELA 2: início do aluno ========== -->
     <section data-tela="aluno" class="tela tela-central" hidden>
-      <h1 tabindex="-1" class="saudacao">Olá, estudante!</h1>
+      <h1 tabindex="-1" class="saudacao" id="saudacao-aluno">Olá, estudante!</h1>
       <!-- Busca: filtra matérias e assuntos (Etapa 2). Enter pede um resumo à IA (Etapa 5). -->
       <label class="busca" for="busca-aluno">
         <span class="lupa" aria-hidden="true"></span>
@@ -119,6 +120,9 @@
 
         <label for="resumo-materia">Matéria <small>(opcional)</small></label>
         <select id="resumo-materia"></select>
+
+        <label for="resumo-nivel">Nível de ensino</label>
+        <select id="resumo-nivel" class="seletor-nivel"></select>
 
         <label for="resumo-texto">Texto para resumir <small>(opcional)</small></label>
         <textarea id="resumo-texto" rows="5" maxlength="12000" placeholder="Cole aqui o texto do livro ou do caderno. Se deixar vazio, a IA faz um resumo próprio sobre o assunto."></textarea>
@@ -155,6 +159,9 @@
 
         <label for="q-materia">Matéria <small>(opcional)</small></label>
         <select id="q-materia"></select>
+
+        <label for="q-ensino">Nível de ensino</label>
+        <select id="q-ensino" class="seletor-nivel"></select>
 
         <fieldset class="tipos">
           <legend>Número de questões</legend>
@@ -194,6 +201,43 @@
         <h2>Meus questionários</h2>
         <div id="lista-questionarios"></div>
       </section>
+    </section>
+
+    <!-- ========== TELA: perfil / cadastro rápido do aluno (Etapa 7) ========== -->
+    <section data-tela="aluno/perfil" class="tela tela-resumos" id="tela-perfil" hidden>
+      <h1 tabindex="-1" id="perfil-titulo">Meu perfil</h1>
+      <p class="explica" id="perfil-explica"></p>
+
+      <form class="form-resumo" id="form-perfil">
+        <label for="perfil-nome">Seu nome <small>(opcional)</small></label>
+        <input id="perfil-nome" type="text" maxlength="40" placeholder="Como você quer ser chamado?" autocomplete="off">
+
+        <label for="perfil-nivel">Nível de ensino</label>
+        <select id="perfil-nivel" class="seletor-nivel" required></select>
+
+        <fieldset class="tipos">
+          <legend>Seu objetivo</legend>
+          <label><input type="radio" name="perfil-objetivo" value="prova" required> Passar na prova</label>
+          <label><input type="radio" name="perfil-objetivo" value="zero"> Aprender do zero</label>
+          <label><input type="radio" name="perfil-objetivo" value="revisar"> Revisar</label>
+        </fieldset>
+
+        <fieldset class="tipos">
+          <legend>Seu nível de conhecimento</legend>
+          <label><input type="radio" name="perfil-conhecimento" value="iniciante" required> Iniciante</label>
+          <label><input type="radio" name="perfil-conhecimento" value="intermediario"> Intermediário</label>
+          <label><input type="radio" name="perfil-conhecimento" value="avancado"> Avançado</label>
+        </fieldset>
+
+        <fieldset class="tipos">
+          <legend>Tempo para estudar por dia</legend>
+          <label><input type="radio" name="perfil-tempo" value="curto" required> Até 30 min</label>
+          <label><input type="radio" name="perfil-tempo" value="medio"> 30 min a 1 h</label>
+          <label><input type="radio" name="perfil-tempo" value="longo"> Mais de 1 h</label>
+        </fieldset>
+
+        <button type="submit" class="botao-acao" id="botao-perfil">Salvar</button>
+      </form>
     </section>
 
     <!-- ========== TELA: painel "Meu desempenho" (Etapa 4) ========== -->
@@ -268,7 +312,7 @@
 
   <footer class="rodape">
     <p>Projeto da Turma A · Ideia de Millena Vitória e Vanusa Macedo</p>
-    <p>Versão de teste · Etapa 6</p>
+    <p>Versão de teste · Etapa 7</p>
   </footer>
 
   <script src="js/cronograma.js"></script>
@@ -277,6 +321,7 @@
   <script src="js/ia.js"></script>
   <script src="js/resumos.js"></script>
   <script src="js/questionarios.js"></script>
+  <script src="js/perfil.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

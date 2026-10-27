@@ -166,6 +166,9 @@ function desenharDesempenho() {
     '<span>Semana passada</span><div class="barra barra-comparar barra-passada"><i style="width:' + (semanaPassada / maior * 100) + '%"></i></div><strong>' + formatarTempo(semanaPassada) + '</strong>' +
     '</div></section>';
 
+  // Pontos fracos (arquivo perfil.js)
+  html += blocoPontosFracos();
+
   // Progresso por matéria (só as que têm assuntos ou tempo estudado)
   const linhas = MATERIAS.map(function (m) {
     const c = contarAssuntos(m);

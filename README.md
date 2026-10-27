@@ -35,6 +35,7 @@ A chave da OpenAI fica só na Vercel. Ela nunca aparece no site nem no celular d
 | `js/ia.js` | Conversa com a IA e pedido do código da escola |
 | `js/resumos.js` | Resumos com IA (Etapa 5) |
 | `js/questionarios.js` | Questionários com IA, correção e resultado (Etapa 6) |
+| `js/perfil.js` | Perfil do aluno, cadastro rápido e pontos fracos (Etapa 7) |
 | `api/ia.js` | Roda no servidor da Vercel: guarda a chave da OpenAI e monta os pedidos para a IA |
 | `manifest.webmanifest` | Nome e ícone quando o site é instalado como app |
 | `sw.js` | Faz o app abrir rápido e funcionar sem internet |

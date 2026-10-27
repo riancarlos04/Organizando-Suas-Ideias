@@ -11,15 +11,51 @@
 
 const MODELO_PADRAO = 'gpt-4o-mini';
 
-// Por enquanto a IA sempre escreve para este público.
-// Na Etapa 7 (Personalização) o aluno vai poder escolher o nível.
-const PUBLICO = 'alunos do 8º e 9º ano do ensino fundamental de uma escola pública brasileira';
+// ---------- Perfil do aluno (Etapa 7) ----------
+// O app manda o perfil; aqui só valem as opções desta lista.
+const NIVEIS_DE_ENSINO = {
+  '6ano': 'aluno do 6º ano do ensino fundamental',
+  '7ano': 'aluno do 7º ano do ensino fundamental',
+  '8ano': 'aluno do 8º ano do ensino fundamental',
+  '9ano': 'aluno do 9º ano do ensino fundamental',
+  medio: 'aluno do ensino médio',
+  tecnico: 'aluno de curso técnico',
+  superior: 'aluno do ensino superior (faculdade), que entende termos técnicos',
+  concurso: 'pessoa que estuda para concursos e vestibulares'
+};
+const CONHECIMENTOS = {
+  iniciante: 'está começando agora e precisa de explicações bem básicas',
+  intermediario: 'já conhece o básico do assunto',
+  avancado: 'já domina o assunto e quer aprofundar'
+};
+const OBJETIVOS = {
+  prova: 'quer passar na prova',
+  zero: 'quer aprender do zero',
+  revisar: 'quer revisar o conteúdo'
+};
+const TEMPOS = {
+  curto: 'tem até 30 minutos por dia para estudar',
+  medio: 'tem de 30 minutos a 1 hora por dia para estudar',
+  longo: 'tem mais de 1 hora por dia para estudar'
+};
 
-const INSTRUCOES_GERAIS =
-  'Você é o assistente de estudos do app "Organizando Seus Conhecimentos", feito para ' + PUBLICO + '. ' +
-  'Responda sempre em português do Brasil, com linguagem clara e adequada à idade. ' +
-  'Seja correto: se não tiver certeza de uma informação, diga isso. ' +
-  'Recuse com educação pedidos que não sejam sobre estudo. ';
+// Descreve o aluno para a IA. Sem perfil, vale o público da escola (8º/9º ano).
+function descreverAluno(perfil) {
+  perfil = perfil || {};
+  let texto = NIVEIS_DE_ENSINO[perfil.nivelEnsino] || 'aluno do 8º ou 9º ano do ensino fundamental';
+  if (CONHECIMENTOS[perfil.conhecimento]) texto += ', que ' + CONHECIMENTOS[perfil.conhecimento];
+  if (OBJETIVOS[perfil.objetivo]) texto += ', ' + OBJETIVOS[perfil.objetivo];
+  if (TEMPOS[perfil.tempo]) texto += ' e ' + TEMPOS[perfil.tempo];
+  return texto;
+}
+
+function instrucoesGerais(perfil) {
+  return 'Você é o assistente de estudos do app "Organizando Seus Conhecimentos", de uma escola pública brasileira. ' +
+    'Quem está usando agora: ' + descreverAluno(perfil) + '. Adapte a linguagem, a profundidade e os exemplos a essa pessoa. ' +
+    'Responda sempre em português do Brasil, com linguagem clara. ' +
+    'Seja correto: se não tiver certeza de uma informação, diga isso. ' +
+    'Recuse com educação pedidos que não sejam sobre estudo. ';
+}
 const FORMATO_TEXTO =
   'Formate a resposta só com: títulos começando com "## ", listas começando com "- " e destaques entre **asteriscos duplos**. Não use tabelas nem outros formatos.';
 const FORMATO_JSON = 'Responda somente com um objeto JSON válido, sem nenhum texto antes ou depois.';
@@ -50,7 +86,11 @@ function pedidoDeResumo(dados) {
   if (texto) {
     pedido += '\nUse somente as informações do texto abaixo, enviado pelo aluno:\n"""\n' + texto + '\n"""';
   } else {
-    pedido += '\nO aluno não enviou texto. Faça o resumo com base no que é ensinado na escola sobre esse assunto.';
+    pedido += '\nO aluno não enviou texto. Faça o resumo com base no que é ensinado sobre esse assunto.';
+  }
+  // Botão "Explicar mais simples"
+  if (dados.simplificar === true) {
+    pedido += '\n\nO aluno achou difícil a primeira explicação. Explique de um jeito ainda mais simples: frases curtas, palavras do dia a dia e pelo menos um exemplo.';
   }
   return pedido;
 }
@@ -61,7 +101,7 @@ const NIVEIS = {
   facil: 'FÁCIL: questões diretas, que cobram lembrar definições, fatos e ideias básicas do assunto.',
   medio: 'MÉDIO: questões que pedem para entender e aplicar o conteúdo em situações simples, com um ou dois passos de raciocínio. ' +
     'Nas de múltipla escolha, as alternativas erradas devem ser erros comuns de quem estudou pouco.',
-  dificil: 'DIFÍCIL: questões desafiadoras para a série: problemas com vários passos, situações novas que exigem aplicar o conteúdo, ' +
+  dificil: 'DIFÍCIL: questões desafiadoras para o nível de ensino do aluno: problemas com vários passos, situações novas que exigem aplicar o conteúdo, ' +
     'comparação entre conceitos, causa e consequência, interpretação de um pequeno texto, tabela ou situação descrita no enunciado. ' +
     'Nas de múltipla escolha, todas as alternativas erradas devem parecer certas para quem não domina o assunto. ' +
     'NÃO faça perguntas que se respondem só lembrando uma definição ou um nome.'
@@ -158,7 +198,7 @@ const TAREFAS = {
   corrigir: { montar: pedidoDeCorrecao, limpar: limparCorrecao }
 };
 
-async function chamarOpenAI(pedido, querJson) {
+async function chamarOpenAI(pedido, querJson, perfil) {
   const resposta = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -168,7 +208,7 @@ async function chamarOpenAI(pedido, querJson) {
     body: JSON.stringify({
       model: process.env.OPENAI_MODELO || MODELO_PADRAO,
       messages: [
-        { role: 'system', content: INSTRUCOES_GERAIS + (querJson ? FORMATO_JSON : FORMATO_TEXTO) },
+        { role: 'system', content: instrucoesGerais(perfil) + (querJson ? FORMATO_JSON : FORMATO_TEXTO) },
         { role: 'user', content: pedido }
       ],
       response_format: querJson ? { type: 'json_object' } : undefined,
@@ -206,7 +246,7 @@ module.exports = async function (req, res) {
   }
 
   try {
-    const texto = await chamarOpenAI(pedido, !!tarefa.limpar);
+    const texto = await chamarOpenAI(pedido, !!tarefa.limpar, dados.perfil);
     if (!tarefa.limpar) {
       res.status(200).json({ texto: texto });
       return;

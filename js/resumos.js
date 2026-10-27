@@ -64,6 +64,7 @@ function desenharResumoAberto() {
     '<div class="resumo-texto">' + textoParaHtml(r.texto) + '</div>' +
     '<p class="aviso-ia">Resumo feito por IA. Confira com o livro ou com o professor.</p>' +
     '<div class="resumo-botoes">' +
+    (r.pedido ? '<button type="button" class="botao-secundario" data-mais-simples>Explicar mais simples</button>' : '') +
     (jaGuardado
       ? '<button type="button" class="botao-acao" data-fechar-resumo>Fechar</button>'
       : '<button type="button" class="botao-acao" data-guardar-resumo>Guardar resumo</button>' +
@@ -114,7 +115,8 @@ async function gerarResumo(dados) {
       materia: dados.materia,
       tipo: dados.tipo,
       texto: texto,
-      data: dataDeHoje()
+      data: dataDeHoje(),
+      pedido: dados   // guardado para o botão "Explicar mais simples"
     };
     desenharResumoAberto();
     iniciarCronometroDoResumo(resumoAberto);
@@ -137,13 +139,15 @@ document.getElementById('form-resumo').addEventListener('submit', function (even
     assunto: document.getElementById('resumo-assunto').value.trim(),
     materia: document.getElementById('resumo-materia').value,
     texto: document.getElementById('resumo-texto').value.trim(),
-    tipo: document.querySelector('input[name="tipo-resumo"]:checked').value
+    tipo: document.querySelector('input[name="tipo-resumo"]:checked').value,
+    perfil: perfilParaIA(document.getElementById('resumo-nivel').value)   // arquivo perfil.js
   };
   if (!dados.assunto && !dados.texto) {
     mostrarErroResumo('Escreva um assunto ou cole um texto para resumir.');
     document.getElementById('resumo-assunto').focus();
     return;
   }
+  registrarPesquisa(dados.assunto, dados.materia);
   gerarResumo(dados);
 });
 
@@ -151,7 +155,9 @@ document.getElementById('form-resumo').addEventListener('submit', function (even
 document.getElementById('tela-resumos').addEventListener('click', function (evento) {
   const alvo = evento.target.closest('button');
   if (!alvo) return;
-  if (alvo.hasAttribute('data-guardar-resumo')) {
+  if (alvo.hasAttribute('data-mais-simples')) {
+    gerarResumo(Object.assign({}, resumoAberto.pedido, { simplificar: true }));
+  } else if (alvo.hasAttribute('data-guardar-resumo')) {
     resumosGuardados.push(resumoAberto);
     salvarResumos();
     resumoAberto = null;

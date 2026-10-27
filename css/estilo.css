@@ -496,6 +496,14 @@ a { color: var(--azul); }
 .acertou .selo-resultado { color: var(--azul); }
 .explicacao { font-size: 14px; color: var(--cinza-texto); }
 
+/* ---------- Pontos fracos (Etapa 7) ---------- */
+.ponto-fraco {
+  display: grid; gap: 10px; justify-items: start;
+  padding: 14px 16px; border-radius: var(--raio); background: var(--roxo-claro); border: 2px solid var(--roxo);
+}
+.ponto-fraco p { margin: 0; font-size: 17px; }
+.temas small { color: var(--cinza-texto); font-size: 13px; white-space: nowrap; }
+
 /* Texto só para leitores de tela */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 

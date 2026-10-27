@@ -71,6 +71,7 @@ async function gerarQuestionario(pedido) {
       materia: pedido.materia,
       nivel: pedido.nivel,
       gabarito: pedido.gabarito,
+      perfil: pedido.perfil,
       questoes: resposta.dados.questoes,
       respostas: resposta.dados.questoes.map(function () { return null; })
     };
@@ -150,6 +151,7 @@ async function terminarQuestionario() {
     try {
       const resposta = await pedirIA({
         tarefa: 'corrigir',
+        perfil: q.perfil,
         itens: discursivas.map(function (item) {
           return { enunciado: item.enunciado, resposta_esperada: item.resposta_esperada, resposta_aluno: item.resposta || '' };
         })
@@ -288,7 +290,8 @@ document.getElementById('form-questionario').addEventListener('submit', function
     quantidade: Number(valorMarcado('q-quantidade')),
     nivel: valorMarcado('q-nivel'),
     tipos: Array.prototype.map.call(document.querySelectorAll('input[name="q-tipos"]:checked'), function (c) { return c.value; }),
-    gabarito: valorMarcado('q-gabarito')
+    gabarito: valorMarcado('q-gabarito'),
+    perfil: perfilParaIA(document.getElementById('q-ensino').value)   // arquivo perfil.js
   };
   pedido.evitar = questoesJaFeitas(pedido.assunto);
   const area = document.getElementById('questionario-area');
@@ -301,6 +304,7 @@ document.getElementById('form-questionario').addEventListener('submit', function
     area.innerHTML = '<p class="erro">Escolha pelo menos um tipo de questão.</p>';
     return;
   }
+  registrarPesquisa(pedido.assunto, pedido.materia);
   gerarQuestionario(pedido);
 });
 

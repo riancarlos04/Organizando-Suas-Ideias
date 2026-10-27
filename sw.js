@@ -4,7 +4,7 @@
 // Sempre tenta a versão mais nova primeiro (internet) e só
 // usa a cópia guardada quando está sem conexão.
 // =========================================================
-const CACHE = 'organizando-v13';
+const CACHE = 'organizando-v14';
 const ARQUIVOS = [
   './',
   'index.html',
@@ -15,6 +15,7 @@ const ARQUIVOS = [
   'js/ia.js',
   'js/resumos.js',
   'js/questionarios.js',
+  'js/perfil.js',
   'js/app.js',
   'manifest.webmanifest',
   'icones/logo.png',
