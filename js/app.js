@@ -6,7 +6,6 @@
 
 // Itens do menu que ainda não funcionam: em qual etapa cada um será construído
 const EM_BREVE = {
-  'aluno/questionarios': { titulo: 'Questionários', etapa: 'Etapa 6' },
   'professor/atividade': { titulo: 'Criar atividade', etapa: 'Etapa 8' },
   'professor/prova':     { titulo: 'Criar prova', etapa: 'Etapa 9' },
   'professor/plano':     { titulo: 'Plano de aula', etapa: 'Etapa 9' },
@@ -102,6 +101,7 @@ function mostrarTela() {
   if (tela === 'aluno/metas') desenharMetas();
   if (tela === 'aluno/desempenho') desenharDesempenho();
   if (tela === 'aluno/resumos') desenharResumos();
+  if (tela === 'aluno/questionarios') desenharQuestionarios();
   atualizarProgresso();
   mostrarCronometro();
 

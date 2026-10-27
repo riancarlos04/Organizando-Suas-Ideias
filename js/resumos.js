@@ -25,45 +25,6 @@ function salvarResumos() {
 }
 
 let resumoAberto = null;   // resumo mostrado na tela agora
-let ultimoPedido = null;   // para tentar de novo depois de digitar o código
-
-// ---------- Conversa com a IA (usada também nas próximas etapas) ----------
-// A chave da OpenAI fica no servidor (arquivo api/ia.js), nunca aqui.
-async function pedirIA(dados) {
-  if (location.protocol === 'file:') {
-    throw new Error('A IA só funciona no site publicado na Vercel.');
-  }
-  const codigo = ler('codigo-escola');
-  if (!codigo) {
-    const erro = new Error('Digite o código da escola para usar a IA.');
-    erro.precisaCodigo = true;
-    throw erro;
-  }
-
-  let resposta;
-  try {
-    resposta = await fetch('api/ia', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Codigo-Escola': codigo },
-      body: JSON.stringify(dados)
-    });
-  } catch (erro) {
-    throw new Error('Não deu para falar com a IA. Confira a internet. A IA só funciona no site publicado na Vercel.');
-  }
-
-  let json = {};
-  try { json = await resposta.json(); } catch (erro) {}
-  if (resposta.status === 401) {
-    guardar('codigo-escola', '');
-    const erro = new Error('Código da escola incorreto. Digite de novo.');
-    erro.precisaCodigo = true;
-    throw erro;
-  }
-  if (!resposta.ok || !json.texto) {
-    throw new Error(json.erro || 'A IA não respondeu. A IA só funciona no site publicado na Vercel.');
-  }
-  return json.texto;
-}
 
 // Transforma o texto da IA (## títulos, - listas, **negrito**) em HTML seguro
 function textoParaHtml(texto) {
@@ -146,7 +107,7 @@ async function gerarResumo(dados) {
   resumoAberto = null;
   document.getElementById('resumo-resultado').innerHTML = '<p class="carregando">A IA está escrevendo o resumo…</p>';
   try {
-    const texto = await pedirIA(dados);
+    const texto = (await pedirIA(dados)).texto;
     resumoAberto = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       assunto: dados.assunto,
@@ -158,11 +119,6 @@ async function gerarResumo(dados) {
     desenharResumoAberto();
     iniciarCronometroDoResumo(resumoAberto);
   } catch (erro) {
-    if (erro.precisaCodigo) {
-      ultimoPedido = dados;
-      document.getElementById('form-codigo').hidden = false;
-      document.getElementById('codigo-escola').focus();
-    }
     mostrarErroResumo(erro.message);
   } finally {
     botao.disabled = false;
@@ -189,17 +145,6 @@ document.getElementById('form-resumo').addEventListener('submit', function (even
     return;
   }
   gerarResumo(dados);
-});
-
-// Código da escola
-document.getElementById('form-codigo').addEventListener('submit', function (evento) {
-  evento.preventDefault();
-  const campo = document.getElementById('codigo-escola');
-  if (!campo.value.trim()) return;
-  guardar('codigo-escola', campo.value.trim());
-  campo.value = '';
-  document.getElementById('form-codigo').hidden = true;
-  if (ultimoPedido) gerarResumo(ultimoPedido);
 });
 
 // Guardar, descartar, abrir e remover

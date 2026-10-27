@@ -57,7 +57,7 @@
       <a href="#/aluno/cronograma">Cronograma</a>
       <a href="#/aluno/metas">Minhas metas</a>
       <a href="#/aluno/resumos">Resumos</a>
-      <a href="#/aluno/questionarios">Questionários <small>Etapa 6</small></a>
+      <a href="#/aluno/questionarios">Questionários</a>
       <a href="#/aluno/desempenho">Meu desempenho</a>
     </nav>
 
@@ -150,22 +150,63 @@
         <button type="submit" class="botao-acao" id="botao-gerar">Gerar resumo</button>
       </form>
 
-      <!-- Aparece quando a IA pede o código de acesso da escola -->
-      <form class="caixa-codigo" id="form-codigo" hidden>
-        <label for="codigo-escola">Código da escola</label>
-        <p>Peça o código ao professor. Ele fica guardado neste aparelho.</p>
-        <div class="linha-codigo">
-          <input id="codigo-escola" type="password" autocomplete="off">
-          <button type="submit" class="botao-acao">Salvar código</button>
-        </div>
-      </form>
-
       <!-- Resumo gerado ou aberto (montado pelo arquivo js/resumos.js) -->
       <div id="resumo-resultado" aria-live="polite"></div>
 
       <section class="bloco">
         <h2>Meus resumos</h2>
         <div id="lista-resumos"></div>
+      </section>
+    </section>
+
+    <!-- ========== TELA: questionários com IA (Etapa 6) ========== -->
+    <section data-tela="aluno/questionarios" class="tela tela-resumos" id="tela-questionarios" hidden>
+      <h1 tabindex="-1">Questionários</h1>
+
+      <form class="form-resumo" id="form-questionario">
+        <label for="q-assunto">Assunto</label>
+        <input id="q-assunto" type="text" maxlength="200" placeholder="Ex.: Revolução Francesa" autocomplete="off">
+
+        <label for="q-materia">Matéria <small>(opcional)</small></label>
+        <select id="q-materia"></select>
+
+        <fieldset class="tipos">
+          <legend>Número de questões</legend>
+          <label><input type="radio" name="q-quantidade" value="5"> 5</label>
+          <label><input type="radio" name="q-quantidade" value="10" checked> 10</label>
+          <label><input type="radio" name="q-quantidade" value="15"> 15</label>
+          <label><input type="radio" name="q-quantidade" value="20"> 20</label>
+        </fieldset>
+
+        <fieldset class="tipos">
+          <legend>Nível</legend>
+          <label><input type="radio" name="q-nivel" value="facil"> Fácil</label>
+          <label><input type="radio" name="q-nivel" value="medio" checked> Médio</label>
+          <label><input type="radio" name="q-nivel" value="dificil"> Difícil</label>
+        </fieldset>
+
+        <fieldset class="tipos">
+          <legend>Tipos de questão <small>(pode marcar mais de um)</small></legend>
+          <label><input type="checkbox" name="q-tipos" value="multipla" checked> Múltipla escolha</label>
+          <label><input type="checkbox" name="q-tipos" value="vf" checked> Verdadeiro ou falso</label>
+          <label><input type="checkbox" name="q-tipos" value="discursiva"> Discursiva</label>
+        </fieldset>
+
+        <fieldset class="tipos">
+          <legend>Gabarito</legend>
+          <label><input type="radio" name="q-gabarito" value="com" checked> Com gabarito</label>
+          <label><input type="radio" name="q-gabarito" value="sem"> Sem gabarito (só os acertos)</label>
+        </fieldset>
+
+        <button type="submit" class="botao-acao" id="botao-questionario">Gerar questionário</button>
+      </form>
+
+      <!-- Questões para responder ou resultado (montado pelo arquivo js/questionarios.js) -->
+      <div id="questionario-area" aria-live="polite"></div>
+
+      <section class="bloco">
+        <h2>Meus questionários</h2>
+        <div id="lista-questionarios"></div>
       </section>
     </section>
 
@@ -219,6 +260,20 @@
     <button type="button" class="cronometro-cancelar" id="cronometro-cancelar">Cancelar</button>
   </div>
 
+  <!-- Janelinha do código da escola (aparece na primeira vez que alguém usa a IA) -->
+  <div class="fundo-dialogo" id="dialogo-codigo" hidden>
+    <form class="dialogo" id="form-codigo" role="dialog" aria-modal="true" aria-labelledby="titulo-codigo">
+      <h2 id="titulo-codigo">Código da escola</h2>
+      <p id="codigo-mensagem">Peça o código ao professor. Ele fica guardado neste aparelho.</p>
+      <label class="sr" for="codigo-escola">Código da escola</label>
+      <input id="codigo-escola" type="password" autocomplete="off">
+      <div class="resumo-botoes">
+        <button type="submit" class="botao-acao">Salvar código</button>
+        <button type="button" class="botao-secundario" id="cancelar-codigo">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
   <!-- Mensagem que aparece embaixo (parabéns pela meta, estudo registrado...) -->
   <div class="parabens" id="parabens" role="status" aria-live="polite" hidden>
     <strong id="parabens-titulo">Parabéns!</strong>
@@ -227,13 +282,15 @@
 
   <footer class="rodape">
     <p>Projeto da Turma A · Ideia de Millena Vitória e Vanusa Macedo</p>
-    <p>Versão de teste · Etapa 5</p>
+    <p>Versão de teste · Etapa 6</p>
   </footer>
 
   <script src="js/cronograma.js"></script>
   <script src="js/metas.js"></script>
   <script src="js/progresso.js"></script>
+  <script src="js/ia.js"></script>
   <script src="js/resumos.js"></script>
+  <script src="js/questionarios.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

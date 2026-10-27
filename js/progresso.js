@@ -129,6 +129,7 @@ function desenharDesempenho() {
   const metasCumpridas = metas.filter(function (m) { return m.feita; }).length;
   const estaSemana = minutosEstudados(inicioDaSemana(0), inicioDaSemana(1));
   const semanaPassada = minutosEstudados(inicioDaSemana(-1), inicioDaSemana(0));
+  const media = mediaDosQuestionarios();   // arquivo questionarios.js
 
   let comparacao = 'Nenhum estudo registrado ainda.';
   const diferenca = estaSemana - semanaPassada;
@@ -144,7 +145,9 @@ function desenharDesempenho() {
     cartao('Assuntos estudados', assuntos.feitos, 'de ' + plural(assuntos.total, 'assunto', 'assuntos') + ' no cronograma') +
     cartao('Metas cumpridas', metasCumpridas, 'de ' + plural(metas.length, 'meta', 'metas')) +
     cartao('Estudo nesta semana', formatarTempo(estaSemana), comparacao) +
-    cartao('Média nos questionários', 'Em breve', 'Chega com os Questionários (Etapa 6)', 'cartao-em-breve') +
+    (media === null
+      ? cartao('Média nos questionários', '—', 'Nenhum questionário feito ainda', 'cartao-largo')
+      : cartao('Média nos questionários', media + '%', 'em ' + plural(questionariosFeitos.length, 'questionário', 'questionários'), 'cartao-largo')) +
     '</div>';
 
   // Começar a estudar

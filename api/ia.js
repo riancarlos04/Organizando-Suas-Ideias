@@ -19,8 +19,14 @@ const INSTRUCOES_GERAIS =
   'Você é o assistente de estudos do app "Organizando Seus Conhecimentos", feito para ' + PUBLICO + '. ' +
   'Responda sempre em português do Brasil, com linguagem clara e adequada à idade. ' +
   'Seja correto: se não tiver certeza de uma informação, diga isso. ' +
-  'Formate a resposta só com: títulos começando com "## ", listas começando com "- " e destaques entre **asteriscos duplos**. ' +
-  'Não use tabelas nem outros formatos. Recuse com educação pedidos que não sejam sobre estudo.';
+  'Recuse com educação pedidos que não sejam sobre estudo. ';
+const FORMATO_TEXTO =
+  'Formate a resposta só com: títulos começando com "## ", listas começando com "- " e destaques entre **asteriscos duplos**. Não use tabelas nem outros formatos.';
+const FORMATO_JSON = 'Responda somente com um objeto JSON válido, sem nenhum texto antes ou depois.';
+
+function textoLimpo(valor, limite) {
+  return String(valor || '').slice(0, limite).trim();
+}
 
 // ---------- Resumos (Etapa 5) ----------
 const TIPOS_DE_RESUMO = {
@@ -34,12 +40,12 @@ const TIPOS_DE_RESUMO = {
 
 function pedidoDeResumo(dados) {
   const instrucao = TIPOS_DE_RESUMO[dados.tipo];
-  const assunto = String(dados.assunto || '').slice(0, 200).trim();
-  const texto = String(dados.texto || '').slice(0, 12000).trim();
+  const assunto = textoLimpo(dados.assunto, 200);
+  const texto = textoLimpo(dados.texto, 12000);
   if (!instrucao || (!assunto && !texto)) return null;
 
   let pedido = instrucao + '\n';
-  if (dados.materia) pedido += 'Matéria: ' + String(dados.materia).slice(0, 50) + '\n';
+  if (dados.materia) pedido += 'Matéria: ' + textoLimpo(dados.materia, 50) + '\n';
   if (assunto) pedido += 'Assunto: ' + assunto + '\n';
   if (texto) {
     pedido += '\nUse somente as informações do texto abaixo, enviado pelo aluno:\n"""\n' + texto + '\n"""';
@@ -49,11 +55,113 @@ function pedidoDeResumo(dados) {
   return pedido;
 }
 
+// ---------- Questionários (Etapa 6) ----------
+const NIVEIS = { facil: 'fácil', medio: 'médio', dificil: 'difícil' };
+const TIPOS_DE_QUESTAO = {
+  multipla: 'múltipla escolha (4 opções, só uma correta)',
+  vf: 'verdadeiro ou falso',
+  discursiva: 'discursiva (resposta curta escrita pelo aluno)'
+};
+
+function pedidoDeQuestionario(dados) {
+  const assunto = textoLimpo(dados.assunto, 200);
+  const quantidade = Number(dados.quantidade);
+  const nivel = NIVEIS[dados.nivel];
+  const tipos = (Array.isArray(dados.tipos) ? dados.tipos : []).filter(function (t) { return TIPOS_DE_QUESTAO[t]; });
+  if (!assunto || [5, 10, 15, 20].indexOf(quantidade) === -1 || !nivel || !tipos.length) return null;
+
+  return 'Crie um questionário com exatamente ' + quantidade + ' questões de nível ' + nivel + '.\n' +
+    (dados.materia ? 'Matéria: ' + textoLimpo(dados.materia, 50) + '\n' : '') +
+    'Assunto: ' + assunto + '\n' +
+    'Tipos de questão permitidos (distribua entre eles): ' + tipos.map(function (t) { return t + ' = ' + TIPOS_DE_QUESTAO[t]; }).join('; ') + '.\n\n' +
+    'Use este formato JSON:\n' +
+    '{"questoes": [\n' +
+    '  {"tipo": "multipla", "enunciado": "...", "opcoes": ["...", "...", "...", "..."], "correta": 0, "explicacao": "...", "tema": "..."},\n' +
+    '  {"tipo": "vf", "enunciado": "...", "correta": true, "explicacao": "...", "tema": "..."},\n' +
+    '  {"tipo": "discursiva", "enunciado": "...", "resposta_esperada": "...", "explicacao": "...", "tema": "..."}\n' +
+    ']}\n' +
+    'Regras: em "multipla", "correta" é a posição da opção certa (0 a 3). Em "vf", "correta" é true ou false. ' +
+    '"explicacao" explica a resposta certa em 1 ou 2 frases. "tema" é o subtópico da questão em 2 a 4 palavras.';
+}
+
+// Confere o que a IA mandou e joga fora questões com defeito
+function limparQuestionario(json, dados) {
+  const questoes = (json && Array.isArray(json.questoes) ? json.questoes : []).filter(function (q) {
+    if (!q || typeof q.enunciado !== 'string' || typeof q.explicacao !== 'string') return false;
+    if (q.tipo === 'multipla') return Array.isArray(q.opcoes) && q.opcoes.length === 4 && [0, 1, 2, 3].indexOf(q.correta) !== -1;
+    if (q.tipo === 'vf') return typeof q.correta === 'boolean';
+    if (q.tipo === 'discursiva') return typeof q.resposta_esperada === 'string';
+    return false;
+  }).slice(0, Number(dados.quantidade)).map(function (q) {
+    return {
+      tipo: q.tipo,
+      enunciado: q.enunciado,
+      opcoes: q.tipo === 'multipla' ? q.opcoes.map(String) : undefined,
+      correta: q.tipo === 'discursiva' ? undefined : q.correta,
+      resposta_esperada: q.tipo === 'discursiva' ? q.resposta_esperada : undefined,
+      explicacao: q.explicacao,
+      tema: typeof q.tema === 'string' ? q.tema : ''
+    };
+  });
+  return questoes.length ? { questoes: questoes } : null;
+}
+
+// ---------- Correção de questões discursivas (Etapa 6) ----------
+function pedidoDeCorrecao(dados) {
+  const itens = (Array.isArray(dados.itens) ? dados.itens : []).slice(0, 20);
+  if (!itens.length) return null;
+  return 'Corrija as respostas do aluno nas questões discursivas abaixo. Seja justo: aceite respostas com as palavras do aluno, desde que a ideia esteja certa.\n\n' +
+    itens.map(function (item, i) {
+      return 'Questão ' + (i + 1) + ': ' + textoLimpo(item.enunciado, 600) + '\n' +
+        'Resposta esperada: ' + textoLimpo(item.resposta_esperada, 600) + '\n' +
+        'Resposta do aluno: ' + (textoLimpo(item.resposta_aluno, 1000) || '(em branco)');
+    }).join('\n\n') +
+    '\n\nUse este formato JSON, com uma correção para cada questão, na mesma ordem:\n' +
+    '{"correcoes": [{"correta": true, "comentario": "uma frase explicando o que está certo ou o que faltou"}]}';
+}
+function limparCorrecao(json, dados) {
+  const correcoes = json && Array.isArray(json.correcoes) ? json.correcoes : [];
+  if (correcoes.length !== dados.itens.length) return null;
+  return {
+    correcoes: correcoes.map(function (c) {
+      return { correta: c && c.correta === true, comentario: c && typeof c.comentario === 'string' ? c.comentario : '' };
+    })
+  };
+}
+
 // Cada "tarefa" monta seu próprio pedido aqui no servidor.
 // Assim o app não consegue mandar qualquer pergunta para a IA.
+// Tarefas com "limpar" pedem JSON e conferem a resposta antes de devolver.
 const TAREFAS = {
-  resumo: pedidoDeResumo
+  resumo: { montar: pedidoDeResumo },
+  questionario: { montar: pedidoDeQuestionario, limpar: limparQuestionario },
+  corrigir: { montar: pedidoDeCorrecao, limpar: limparCorrecao }
 };
+
+async function chamarOpenAI(pedido, querJson) {
+  const resposta = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + process.env.OPENAI_API_KEY
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_MODELO || MODELO_PADRAO,
+      messages: [
+        { role: 'system', content: INSTRUCOES_GERAIS + (querJson ? FORMATO_JSON : FORMATO_TEXTO) },
+        { role: 'user', content: pedido }
+      ],
+      response_format: querJson ? { type: 'json_object' } : undefined,
+      max_completion_tokens: querJson ? 6000 : 1500
+    })
+  });
+  const json = await resposta.json();
+  if (!resposta.ok) {
+    console.error('Erro da OpenAI:', json);
+    throw new Error('openai');
+  }
+  return json.choices[0].message.content;
+}
 
 module.exports = async function (req, res) {
   if (req.method !== 'POST') {
@@ -70,36 +178,26 @@ module.exports = async function (req, res) {
   }
 
   const dados = req.body || {};
-  const montarPedido = TAREFAS[dados.tarefa];
-  const pedido = montarPedido ? montarPedido(dados) : null;
+  const tarefa = TAREFAS[dados.tarefa];
+  const pedido = tarefa ? tarefa.montar(dados) : null;
   if (!pedido) {
-    res.status(400).json({ erro: 'Pedido incompleto. Escreva um assunto ou cole um texto.' });
+    res.status(400).json({ erro: 'Pedido incompleto. Confira os campos e tente de novo.' });
     return;
   }
 
   try {
-    const resposta = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + process.env.OPENAI_API_KEY
-      },
-      body: JSON.stringify({
-        model: process.env.OPENAI_MODELO || MODELO_PADRAO,
-        messages: [
-          { role: 'system', content: INSTRUCOES_GERAIS },
-          { role: 'user', content: pedido }
-        ],
-        max_completion_tokens: 1500
-      })
-    });
-    const json = await resposta.json();
-    if (!resposta.ok) {
-      console.error('Erro da OpenAI:', json);
-      res.status(502).json({ erro: 'A IA não respondeu agora. Tente de novo em instantes.' });
+    const texto = await chamarOpenAI(pedido, !!tarefa.limpar);
+    if (!tarefa.limpar) {
+      res.status(200).json({ texto: texto });
       return;
     }
-    res.status(200).json({ texto: json.choices[0].message.content });
+    let limpo = null;
+    try { limpo = tarefa.limpar(JSON.parse(texto), dados); } catch (erro) {}
+    if (!limpo) {
+      res.status(502).json({ erro: 'A IA mandou uma resposta com defeito. Tente de novo.' });
+      return;
+    }
+    res.status(200).json({ dados: limpo });
   } catch (erro) {
     console.error('Falha ao falar com a OpenAI:', erro);
     res.status(502).json({ erro: 'A IA não respondeu agora. Tente de novo em instantes.' });

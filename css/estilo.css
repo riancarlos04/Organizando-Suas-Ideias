@@ -391,11 +391,9 @@ a { color: var(--azul); }
 .cartao-numero:first-child .rotulo, .cartao-numero:first-child .cartao-detalhe { color: var(--branco); }
 .numero-grande { margin: 0; font-size: 34px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .cartao-detalhe { margin: 0; font-size: 13px; color: var(--cinza-texto); }
-.cartao-em-breve { border-style: dashed; border-color: var(--linha); }
-.cartao-em-breve .numero-grande { font-size: 22px; color: var(--cinza-texto); }
 @media (min-width: 560px) {
   .cartoes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .cartao-em-breve { grid-column: 1 / -1; }
+  .cartao-largo { grid-column: 1 / -1; }
 }
 
 .bloco { display: grid; gap: 10px; }
@@ -418,17 +416,17 @@ a { color: var(--azul); }
 /* ---------- Resumos com IA (Etapa 5) ---------- */
 .tela-resumos h1 { font-size: 30px; }
 .tela-resumos h2 { margin: 0; font-size: 20px; }
-.form-resumo, .caixa-codigo {
+.form-resumo {
   display: grid; gap: 8px; padding: 14px; border-radius: var(--raio); background: var(--roxo-claro);
 }
-.form-resumo > label, .caixa-codigo > label { font-weight: 700; color: var(--roxo); margin-top: 4px; }
-.form-resumo small { font-weight: 400; color: var(--cinza-texto); }
-.form-resumo input, .form-resumo select, .form-resumo textarea, .caixa-codigo input {
+.form-resumo > label { font-weight: 700; color: var(--roxo); margin-top: 4px; }
+.form-resumo small, .tipos legend small { font-weight: 400; color: var(--cinza-texto); }
+.form-resumo input[type="text"], .form-resumo select, .form-resumo textarea, .dialogo input, .questao textarea {
   font: inherit; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--linha);
   background: var(--branco); color: var(--preto); min-width: 0; width: 100%;
 }
-.form-resumo textarea { resize: vertical; }
-.form-resumo input:focus, .form-resumo select:focus, .form-resumo textarea:focus, .caixa-codigo input:focus { outline: none; border-color: var(--azul); }
+.form-resumo textarea, .questao textarea { resize: vertical; }
+.form-resumo input:focus, .form-resumo select:focus, .form-resumo textarea:focus, .dialogo input:focus, .questao textarea:focus { outline: none; border-color: var(--azul); }
 .form-resumo .botao-acao { justify-self: start; margin-top: 6px; }
 .form-resumo .botao-acao:disabled { opacity: .6; cursor: wait; }
 
@@ -442,9 +440,6 @@ a { color: var(--azul); }
 .tipos label:has(input:checked) { background: var(--roxo); color: var(--branco); }
 .tipos label:has(input:focus-visible) { outline: 3px solid var(--azul); outline-offset: 2px; }
 
-.caixa-codigo { background: var(--azul-claro); }
-.caixa-codigo p { margin: 0; font-size: 14px; color: var(--cinza-texto); }
-.linha-codigo { display: flex; gap: 8px; }
 
 .carregando { margin: 0; padding: 14px; border-radius: var(--raio); background: var(--azul-claro); color: var(--azul-escuro); font-weight: 700; }
 .erro { margin: 0; padding: 12px 14px; border-radius: var(--raio); border: 2px solid var(--preto); font-weight: 700; }
@@ -470,6 +465,49 @@ a { color: var(--azul); }
 }
 .abrir-resumo:hover { background: var(--roxo-claro); }
 .abrir-resumo span { font-size: 13px; color: var(--cinza-texto); }
+
+/* ---------- Janelinha do código da escola ---------- */
+.fundo-dialogo {
+  position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, .45);
+  display: grid; place-items: center; padding: 16px;
+}
+.dialogo {
+  background: var(--branco); border-radius: var(--raio); padding: 20px; width: min(100%, 380px);
+  display: grid; gap: 12px; box-shadow: 0 16px 40px rgba(0, 0, 0, .3);
+}
+.dialogo h2 { margin: 0; color: var(--roxo); font-size: 20px; }
+.dialogo p { margin: 0; color: var(--cinza-texto); font-size: 14px; }
+
+/* ---------- Questionários (Etapa 6) ---------- */
+.responder { display: grid; gap: 14px; }
+.responder-topo { display: grid; gap: 2px; }
+.questao { border: 2px solid var(--roxo); border-radius: var(--raio); padding: 12px 14px 14px; margin: 0; display: grid; gap: 8px; min-width: 0; }
+.questao legend { padding: 0 6px; font-weight: 700; color: var(--roxo); }
+.questao legend small { font-weight: 400; color: var(--cinza-texto); }
+.enunciado { margin: 0; font-weight: 600; }
+.opcao {
+  display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+  padding: 8px 10px; border-radius: 10px; border: 2px solid var(--linha);
+}
+.opcao:hover { border-color: var(--roxo); }
+.opcao:has(input:checked) { border-color: var(--azul); background: var(--azul-claro); }
+.opcao input { width: 20px; height: 20px; accent-color: var(--azul); margin: 2px 0 0; flex: none; }
+
+.resultado { border: 2px solid var(--roxo); border-radius: var(--raio); padding: 14px 16px; display: grid; gap: 10px; }
+.resultado h3 { margin: 8px 0 0; font-size: 17px; color: var(--roxo); }
+.nota-grande { margin: 0; font-size: 40px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.nota-grande span { font-size: 24px; color: var(--roxo); }
+.tudo-certo { margin: 0; font-weight: 700; color: var(--azul); }
+.temas { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.temas li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--roxo-claro); }
+.gabarito { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.gabarito li { border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; border: 2px solid var(--linha); }
+.gabarito li p { margin: 0; }
+.gabarito .acertou { border-color: var(--azul); }
+.gabarito .errou { border-color: var(--preto); }
+.selo-resultado { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.acertou .selo-resultado { color: var(--azul); }
+.explicacao { font-size: 14px; color: var(--cinza-texto); }
 
 /* Texto só para leitores de tela */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
