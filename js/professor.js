@@ -230,7 +230,8 @@ function desenharEditor() {
     '<label for="ativ-titulo" class="rotulo">Título da atividade</label>' +
     '<input type="text" id="ativ-titulo" class="titulo-editor" value="' + seguro(a.titulo) + '">' +
     '<p class="cartao-detalhe">' + [a.materia, nomeDoAno(a.ano), NOMES_DOS_NIVEIS[a.nivel]].filter(Boolean).join(' · ') +
-    ' · ' + plural(a.questoes.length, 'questão', 'questões') + ' · Salva automaticamente</p>';
+    ' · ' + plural(a.questoes.length, 'questão', 'questões') + ' · Salva automaticamente</p>' +
+    '<p class="revisar">Confira as respostas antes de imprimir: a IA pode errar, principalmente em contas.</p>';
 
   if (a.questoes.length) {
     html += '<ol class="lista-editor">' + a.questoes.map(editorDaQuestao).join('') + '</ol>';

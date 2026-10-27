@@ -121,15 +121,19 @@ const TIPOS_DE_QUESTAO = {
 const TIPOS_DO_ALUNO = ['multipla', 'vf', 'discursiva'];
 const TIPOS_DO_PROFESSOR = Object.keys(TIPOS_DE_QUESTAO);
 
+// O campo "resolucao" vem ANTES da resposta: a IA resolve a questão primeiro
+// e só depois marca a certa. Sem isso ela marca errado, principalmente em contas.
 const MODELOS_DE_QUESTAO = {
-  multipla: '{"tipo": "multipla", "enunciado": "...", "opcoes": ["...", "...", "...", "..."], "correta": 0, "explicacao": "...", "tema": "..."}',
-  vf: '{"tipo": "vf", "enunciado": "...", "correta": true, "explicacao": "...", "tema": "..."}',
-  discursiva: '{"tipo": "discursiva", "enunciado": "...", "resposta_esperada": "...", "explicacao": "...", "tema": "..."}',
+  multipla: '{"tipo": "multipla", "enunciado": "...", "resolucao": "...", "opcoes": ["...", "...", "...", "..."], "correta": 0, "explicacao": "...", "tema": "..."}',
+  vf: '{"tipo": "vf", "enunciado": "...", "resolucao": "...", "correta": true, "explicacao": "...", "tema": "..."}',
+  discursiva: '{"tipo": "discursiva", "enunciado": "...", "resolucao": "...", "resposta_esperada": "...", "explicacao": "...", "tema": "..."}',
   associacao: '{"tipo": "associacao", "enunciado": "Associe as colunas.", "pares": [{"a": "...", "b": "..."}], "explicacao": "...", "tema": "..."}',
-  interpretacao: '{"tipo": "interpretacao", "texto": "...", "enunciado": "...", "resposta_esperada": "...", "explicacao": "...", "tema": "..."}'
+  interpretacao: '{"tipo": "interpretacao", "texto": "...", "enunciado": "...", "resolucao": "...", "resposta_esperada": "...", "explicacao": "...", "tema": "..."}'
 };
 const REGRAS_DO_FORMATO =
-  'Regras: em "multipla", "correta" é a posição da opção certa (0 a 3). Em "vf", "correta" é true ou false. ' +
+  'Regras: em "resolucao", RESOLVA a questão passo a passo (contas completas, de forma curta) ANTES de escrever a resposta. ' +
+  'Depois confira: a opção marcada em "correta" (ou a "resposta_esperada") tem que ser exatamente o resultado da resolução. ' +
+  'Em "multipla", "correta" é a posição da opção certa (0 a 3) e só uma opção pode estar certa. Em "vf", "correta" é true ou false. ' +
   'Em "associacao", cada par liga um item "a" ao seu item "b" certo. ' +
   '"explicacao" explica a resposta certa em 1 ou 2 frases. "tema" é o subtópico da questão em 2 a 4 palavras.';
 
@@ -277,7 +281,7 @@ async function chamarOpenAI(pedido, querJson, perfil, paraProfessor) {
         { role: 'user', content: pedido }
       ],
       response_format: querJson ? { type: 'json_object' } : undefined,
-      max_completion_tokens: querJson ? 6000 : 1500
+      max_completion_tokens: querJson ? 12000 : 1500   // JSON maior: cada questão traz a resolução
     })
   });
   const json = await resposta.json();
