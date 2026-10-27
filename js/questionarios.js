@@ -176,6 +176,14 @@ async function terminarQuestionario() {
   resultadoAberto = feito;
   desenharQuestionarios();
   document.getElementById('questionario-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Mais de 60%: parabéns. Senão: pede para revisar (decisão da turma)
+  if (passouDeSessenta(feito)) mostrarMensagem('Parabéns!', 'Você acertou ' + feito.acertos + ' de ' + feito.total + '.');
+  else mostrarMensagem('Revise o conteúdo', 'Você acertou ' + feito.acertos + ' de ' + feito.total + '. Revise o conteúdo e se esforce mais.');
+}
+
+function passouDeSessenta(feito) {
+  return feito.acertos / feito.total > 0.6;
 }
 
 // ---------- Resultado ----------
@@ -190,7 +198,10 @@ function desenharResultado() {
   const r = resultadoAberto;
   let html = '<article class="resultado">' +
     '<p class="rotulo">Resultado · ' + seguro(r.assunto) + (r.materia ? ' · ' + seguro(r.materia) : '') + '</p>' +
-    '<p class="nota-grande">' + r.acertos + ' de ' + r.total + ' <span>· ' + r.porcentagem + '%</span></p>' +
+    '<p class="nota-grande">' + r.acertos + ' de ' + r.total + '</p>' +
+    (passouDeSessenta(r)
+      ? '<p class="tudo-certo">Parabéns!</p>'
+      : '<p class="revisar">Revise o conteúdo e se esforce mais.</p>') +
     (r.emBranco ? '<p class="cartao-detalhe">' + plural(r.emBranco, 'questão ficou', 'questões ficaram') + ' em branco.</p>' : '');
 
   // Temas das questões erradas
@@ -203,8 +214,6 @@ function desenharResultado() {
     html += '<h3>Precisa estudar mais</h3><ul class="temas">' + temas.map(function (tema) {
       return '<li><span>' + seguro(tema) + '</span><button type="button" class="botao-estudar" data-resumo-tema="' + seguro(tema) + '" data-materia="' + seguro(r.materia || '') + '">Ver resumo</button></li>';
     }).join('') + '</ul>';
-  } else {
-    html += '<p class="tudo-certo">Você acertou todas as questões.</p>';
   }
 
   if (r.gabarito === 'com') {

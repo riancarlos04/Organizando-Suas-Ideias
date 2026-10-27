@@ -496,8 +496,8 @@ a { color: var(--azul); }
 .resultado { border: 2px solid var(--roxo); border-radius: var(--raio); padding: 14px 16px; display: grid; gap: 10px; }
 .resultado h3 { margin: 8px 0 0; font-size: 17px; color: var(--roxo); }
 .nota-grande { margin: 0; font-size: 40px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.nota-grande span { font-size: 24px; color: var(--roxo); }
-.tudo-certo { margin: 0; font-weight: 700; color: var(--azul); }
+.tudo-certo { margin: 0; font-family: var(--fonte-saudacao); font-size: 28px; color: var(--azul); }
+.revisar { margin: 0; font-weight: 700; padding: 8px 12px; border-radius: 10px; background: var(--roxo-claro); color: var(--roxo); }
 .temas { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .temas li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--roxo-claro); }
 .gabarito { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
