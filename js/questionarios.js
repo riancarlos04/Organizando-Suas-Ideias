@@ -39,6 +39,19 @@ function mediaDosQuestionarios() {
 }
 
 // ---------- Gerar ----------
+// A IA não lembra dos pedidos anteriores. Por isso o app manda junto
+// as questões que o aluno já fez sobre o mesmo assunto (as mais novas primeiro),
+// para a IA não repetir.
+function questoesJaFeitas(assunto) {
+  const procurado = semAcento(assunto.trim());
+  const enunciados = [];
+  questionariosFeitos.slice().reverse().forEach(function (q) {
+    if (semAcento(q.assunto.trim()) !== procurado) return;
+    q.questoes.forEach(function (questao) { enunciados.push(questao.enunciado); });
+  });
+  return enunciados.slice(0, 40);
+}
+
 function valorMarcado(nome) {
   const marcado = document.querySelector('input[name="' + nome + '"]:checked');
   return marcado ? marcado.value : '';
@@ -277,6 +290,7 @@ document.getElementById('form-questionario').addEventListener('submit', function
     tipos: Array.prototype.map.call(document.querySelectorAll('input[name="q-tipos"]:checked'), function (c) { return c.value; }),
     gabarito: valorMarcado('q-gabarito')
   };
+  pedido.evitar = questoesJaFeitas(pedido.assunto);
   const area = document.getElementById('questionario-area');
   if (!pedido.assunto) {
     area.innerHTML = '<p class="erro">Escreva o assunto do questionário.</p>';

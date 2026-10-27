@@ -56,7 +56,16 @@ function pedidoDeResumo(dados) {
 }
 
 // ---------- Questionários (Etapa 6) ----------
-const NIVEIS = { facil: 'fácil', medio: 'médio', dificil: 'difícil' };
+// O que cada nível quer dizer na prática (sem isso a IA faz tudo fácil)
+const NIVEIS = {
+  facil: 'FÁCIL: questões diretas, que cobram lembrar definições, fatos e ideias básicas do assunto.',
+  medio: 'MÉDIO: questões que pedem para entender e aplicar o conteúdo em situações simples, com um ou dois passos de raciocínio. ' +
+    'Nas de múltipla escolha, as alternativas erradas devem ser erros comuns de quem estudou pouco.',
+  dificil: 'DIFÍCIL: questões desafiadoras para a série: problemas com vários passos, situações novas que exigem aplicar o conteúdo, ' +
+    'comparação entre conceitos, causa e consequência, interpretação de um pequeno texto, tabela ou situação descrita no enunciado. ' +
+    'Nas de múltipla escolha, todas as alternativas erradas devem parecer certas para quem não domina o assunto. ' +
+    'NÃO faça perguntas que se respondem só lembrando uma definição ou um nome.'
+};
 const TIPOS_DE_QUESTAO = {
   multipla: 'múltipla escolha (4 opções, só uma correta)',
   vf: 'verdadeiro ou falso',
@@ -70,10 +79,21 @@ function pedidoDeQuestionario(dados) {
   const tipos = (Array.isArray(dados.tipos) ? dados.tipos : []).filter(function (t) { return TIPOS_DE_QUESTAO[t]; });
   if (!assunto || [5, 10, 15, 20].indexOf(quantidade) === -1 || !nivel || !tipos.length) return null;
 
-  return 'Crie um questionário com exatamente ' + quantidade + ' questões de nível ' + nivel + '.\n' +
+  // Questões que o aluno já fez sobre esse assunto (o app manda; a IA não tem memória)
+  const jaFeitas = (Array.isArray(dados.evitar) ? dados.evitar : []).slice(0, 40).map(function (e) {
+    return '- ' + textoLimpo(e, 200);
+  }).filter(function (e) { return e.length > 2; });
+
+  return 'Crie um questionário com exatamente ' + quantidade + ' questões.\n' +
+    'Nível: ' + nivel + '\n' +
     (dados.materia ? 'Matéria: ' + textoLimpo(dados.materia, 50) + '\n' : '') +
     'Assunto: ' + assunto + '\n' +
-    'Tipos de questão permitidos (distribua entre eles): ' + tipos.map(function (t) { return t + ' = ' + TIPOS_DE_QUESTAO[t]; }).join('; ') + '.\n\n' +
+    'Tipos de questão permitidos (distribua entre eles): ' + tipos.map(function (t) { return t + ' = ' + TIPOS_DE_QUESTAO[t]; }).join('; ') + '.\n' +
+    'Varie os subtópicos: cubra partes diferentes do assunto, não só as mais conhecidas.\n' +
+    (jaFeitas.length
+      ? '\nO aluno já respondeu as questões abaixo sobre esse assunto. NÃO repita nenhuma delas, nem com outras palavras; pergunte coisas novas:\n' + jaFeitas.join('\n') + '\n'
+      : '') +
+    '\n' +
     'Use este formato JSON:\n' +
     '{"questoes": [\n' +
     '  {"tipo": "multipla", "enunciado": "...", "opcoes": ["...", "...", "...", "..."], "correta": 0, "explicacao": "...", "tema": "..."},\n' +
