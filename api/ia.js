@@ -6,6 +6,7 @@
 // Configurar na Vercel (Settings → Environment Variables):
 //   OPENAI_API_KEY = chave da OpenAI (platform.openai.com)
 //   CODIGO_ESCOLA  = código que os alunos digitam no app
+//   CODIGO_PROFESSOR = código da área do professor (só os professores sabem)
 //   OPENAI_MODELO  = (opcional) modelo da OpenAI a usar
 // =========================================================
 
@@ -49,9 +50,12 @@ function descreverAluno(perfil) {
   return texto;
 }
 
-function instrucoesGerais(perfil) {
+function instrucoesGerais(perfil, paraProfessor) {
+  const publico = paraProfessor
+    ? 'Um professor está preparando material para: ' + descreverAluno(perfil) + '. Adapte a linguagem e a profundidade a esses alunos. '
+    : 'Quem está usando agora: ' + descreverAluno(perfil) + '. Adapte a linguagem, a profundidade e os exemplos a essa pessoa. ';
   return 'Você é o assistente de estudos do app "Organizando Seus Conhecimentos", de uma escola pública brasileira. ' +
-    'Quem está usando agora: ' + descreverAluno(perfil) + '. Adapte a linguagem, a profundidade e os exemplos a essa pessoa. ' +
+    publico +
     'Responda sempre em português do Brasil, com linguagem clara. ' +
     'Seja correto: se não tiver certeza de uma informação, diga isso. ' +
     'Recuse com educação pedidos que não sejam sobre estudo. ';
@@ -109,62 +113,119 @@ const NIVEIS = {
 const TIPOS_DE_QUESTAO = {
   multipla: 'múltipla escolha (4 opções, só uma correta)',
   vf: 'verdadeiro ou falso',
-  discursiva: 'discursiva (resposta curta escrita pelo aluno)'
+  discursiva: 'discursiva (resposta curta escrita pelo aluno)',
+  associacao: 'associação (o aluno liga cada item da coluna A ao item certo da coluna B; de 4 a 5 pares)',
+  interpretacao: 'interpretação de texto (um texto curto, de 4 a 8 linhas, e uma pergunta sobre ele)'
 };
+// O aluno responde no celular só estes; o professor imprime os cinco
+const TIPOS_DO_ALUNO = ['multipla', 'vf', 'discursiva'];
+const TIPOS_DO_PROFESSOR = Object.keys(TIPOS_DE_QUESTAO);
 
-function pedidoDeQuestionario(dados) {
+const MODELOS_DE_QUESTAO = {
+  multipla: '{"tipo": "multipla", "enunciado": "...", "opcoes": ["...", "...", "...", "..."], "correta": 0, "explicacao": "...", "tema": "..."}',
+  vf: '{"tipo": "vf", "enunciado": "...", "correta": true, "explicacao": "...", "tema": "..."}',
+  discursiva: '{"tipo": "discursiva", "enunciado": "...", "resposta_esperada": "...", "explicacao": "...", "tema": "..."}',
+  associacao: '{"tipo": "associacao", "enunciado": "Associe as colunas.", "pares": [{"a": "...", "b": "..."}], "explicacao": "...", "tema": "..."}',
+  interpretacao: '{"tipo": "interpretacao", "texto": "...", "enunciado": "...", "resposta_esperada": "...", "explicacao": "...", "tema": "..."}'
+};
+const REGRAS_DO_FORMATO =
+  'Regras: em "multipla", "correta" é a posição da opção certa (0 a 3). Em "vf", "correta" é true ou false. ' +
+  'Em "associacao", cada par liga um item "a" ao seu item "b" certo. ' +
+  '"explicacao" explica a resposta certa em 1 ou 2 frases. "tema" é o subtópico da questão em 2 a 4 palavras.';
+
+// Lista de questões que não podem ser repetidas (o app manda; a IA não tem memória)
+function listaParaEvitar(dados) {
+  return (Array.isArray(dados.evitar) ? dados.evitar : []).slice(0, 40).map(function (e) {
+    return '- ' + textoLimpo(e, 200);
+  }).filter(function (e) { return e.length > 2; });
+}
+
+// Monta o pedido de várias questões (questionário do aluno ou atividade do professor)
+function pedidoDeQuestoes(dados, tiposPermitidos, comeco, quemJaViu) {
   const assunto = textoLimpo(dados.assunto, 200);
   const quantidade = Number(dados.quantidade);
   const nivel = NIVEIS[dados.nivel];
-  const tipos = (Array.isArray(dados.tipos) ? dados.tipos : []).filter(function (t) { return TIPOS_DE_QUESTAO[t]; });
+  const tipos = (Array.isArray(dados.tipos) ? dados.tipos : []).filter(function (t) { return tiposPermitidos.indexOf(t) !== -1; });
   if (!assunto || [5, 10, 15, 20].indexOf(quantidade) === -1 || !nivel || !tipos.length) return null;
+  const jaFeitas = listaParaEvitar(dados);
 
-  // Questões que o aluno já fez sobre esse assunto (o app manda; a IA não tem memória)
-  const jaFeitas = (Array.isArray(dados.evitar) ? dados.evitar : []).slice(0, 40).map(function (e) {
-    return '- ' + textoLimpo(e, 200);
-  }).filter(function (e) { return e.length > 2; });
-
-  return 'Crie um questionário com exatamente ' + quantidade + ' questões.\n' +
+  return comeco + ' com exatamente ' + quantidade + ' questões.\n' +
     'Nível: ' + nivel + '\n' +
     (dados.materia ? 'Matéria: ' + textoLimpo(dados.materia, 50) + '\n' : '') +
     'Assunto: ' + assunto + '\n' +
     'Tipos de questão permitidos (distribua entre eles): ' + tipos.map(function (t) { return t + ' = ' + TIPOS_DE_QUESTAO[t]; }).join('; ') + '.\n' +
     'Varie os subtópicos: cubra partes diferentes do assunto, não só as mais conhecidas.\n' +
     (jaFeitas.length
-      ? '\nO aluno já respondeu as questões abaixo sobre esse assunto. NÃO repita nenhuma delas, nem com outras palavras; pergunte coisas novas:\n' + jaFeitas.join('\n') + '\n'
+      ? '\n' + quemJaViu + ' NÃO repita nenhuma delas, nem com outras palavras; pergunte coisas novas:\n' + jaFeitas.join('\n') + '\n'
       : '') +
-    '\n' +
-    'Use este formato JSON:\n' +
-    '{"questoes": [\n' +
-    '  {"tipo": "multipla", "enunciado": "...", "opcoes": ["...", "...", "...", "..."], "correta": 0, "explicacao": "...", "tema": "..."},\n' +
-    '  {"tipo": "vf", "enunciado": "...", "correta": true, "explicacao": "...", "tema": "..."},\n' +
-    '  {"tipo": "discursiva", "enunciado": "...", "resposta_esperada": "...", "explicacao": "...", "tema": "..."}\n' +
-    ']}\n' +
-    'Regras: em "multipla", "correta" é a posição da opção certa (0 a 3). Em "vf", "correta" é true ou false. ' +
-    '"explicacao" explica a resposta certa em 1 ou 2 frases. "tema" é o subtópico da questão em 2 a 4 palavras.';
+    '\nUse este formato JSON:\n{"questoes": [\n  ' +
+    tipos.map(function (t) { return MODELOS_DE_QUESTAO[t]; }).join(',\n  ') + '\n]}\n' +
+    REGRAS_DO_FORMATO;
 }
 
+function pedidoDeQuestionario(dados) {
+  return pedidoDeQuestoes(dados, TIPOS_DO_ALUNO, 'Crie um questionário',
+    'O aluno já respondeu as questões abaixo sobre esse assunto.');
+}
+function pedidoDeAtividade(dados) {
+  return pedidoDeQuestoes(dados, TIPOS_DO_PROFESSOR,
+    'Crie uma atividade escrita que o professor vai imprimir e entregar aos alunos',
+    'O professor já usou as questões abaixo sobre esse assunto.');
+}
+
+// Uma questão nova, para trocar uma que o professor não gostou
+function pedidoDeUmaQuestao(dados) {
+  const assunto = textoLimpo(dados.assunto, 200);
+  const nivel = NIVEIS[dados.nivel];
+  if (!assunto || !nivel || TIPOS_DO_PROFESSOR.indexOf(dados.tipo) === -1) return null;
+  const jaFeitas = listaParaEvitar(dados);
+  return 'Crie 1 questão do tipo ' + TIPOS_DE_QUESTAO[dados.tipo] + ' para uma atividade impressa.\n' +
+    'Nível: ' + nivel + '\n' +
+    (dados.materia ? 'Matéria: ' + textoLimpo(dados.materia, 50) + '\n' : '') +
+    'Assunto: ' + assunto + '\n' +
+    (jaFeitas.length ? '\nA atividade já tem as questões abaixo. A nova questão precisa ser diferente de todas:\n' + jaFeitas.join('\n') + '\n' : '') +
+    '\nUse este formato JSON:\n{"questoes": [' + MODELOS_DE_QUESTAO[dados.tipo] + ']}\n' + REGRAS_DO_FORMATO;
+}
+
+// Confere uma questão que veio da IA
+function questaoValida(q, tiposPermitidos) {
+  if (!q || tiposPermitidos.indexOf(q.tipo) === -1) return false;
+  if (typeof q.enunciado !== 'string' || typeof q.explicacao !== 'string') return false;
+  if (q.tipo === 'multipla') return Array.isArray(q.opcoes) && q.opcoes.length === 4 && [0, 1, 2, 3].indexOf(q.correta) !== -1;
+  if (q.tipo === 'vf') return typeof q.correta === 'boolean';
+  if (q.tipo === 'discursiva') return typeof q.resposta_esperada === 'string';
+  if (q.tipo === 'associacao') {
+    return Array.isArray(q.pares) && q.pares.length >= 3 && q.pares.length <= 6 &&
+      q.pares.every(function (p) { return p && typeof p.a === 'string' && typeof p.b === 'string'; });
+  }
+  if (q.tipo === 'interpretacao') return typeof q.texto === 'string' && typeof q.resposta_esperada === 'string';
+  return false;
+}
+// Copia só os campos que interessam a cada tipo
+function questaoLimpa(q) {
+  return {
+    tipo: q.tipo,
+    enunciado: q.enunciado,
+    texto: q.tipo === 'interpretacao' ? q.texto : undefined,
+    opcoes: q.tipo === 'multipla' ? q.opcoes.map(String) : undefined,
+    correta: q.tipo === 'multipla' || q.tipo === 'vf' ? q.correta : undefined,
+    resposta_esperada: q.tipo === 'discursiva' || q.tipo === 'interpretacao' ? q.resposta_esperada : undefined,
+    pares: q.tipo === 'associacao' ? q.pares.map(function (p) { return { a: p.a, b: p.b }; }) : undefined,
+    explicacao: q.explicacao,
+    tema: typeof q.tema === 'string' ? q.tema : ''
+  };
+}
 // Confere o que a IA mandou e joga fora questões com defeito
-function limparQuestionario(json, dados) {
-  const questoes = (json && Array.isArray(json.questoes) ? json.questoes : []).filter(function (q) {
-    if (!q || typeof q.enunciado !== 'string' || typeof q.explicacao !== 'string') return false;
-    if (q.tipo === 'multipla') return Array.isArray(q.opcoes) && q.opcoes.length === 4 && [0, 1, 2, 3].indexOf(q.correta) !== -1;
-    if (q.tipo === 'vf') return typeof q.correta === 'boolean';
-    if (q.tipo === 'discursiva') return typeof q.resposta_esperada === 'string';
-    return false;
-  }).slice(0, Number(dados.quantidade)).map(function (q) {
-    return {
-      tipo: q.tipo,
-      enunciado: q.enunciado,
-      opcoes: q.tipo === 'multipla' ? q.opcoes.map(String) : undefined,
-      correta: q.tipo === 'discursiva' ? undefined : q.correta,
-      resposta_esperada: q.tipo === 'discursiva' ? q.resposta_esperada : undefined,
-      explicacao: q.explicacao,
-      tema: typeof q.tema === 'string' ? q.tema : ''
-    };
-  });
+function limparQuestoes(json, quantidade, tiposPermitidos) {
+  const questoes = (json && Array.isArray(json.questoes) ? json.questoes : [])
+    .filter(function (q) { return questaoValida(q, tiposPermitidos); })
+    .slice(0, quantidade)
+    .map(questaoLimpa);
   return questoes.length ? { questoes: questoes } : null;
 }
+function limparQuestionario(json, dados) { return limparQuestoes(json, Number(dados.quantidade), TIPOS_DO_ALUNO); }
+function limparAtividade(json, dados) { return limparQuestoes(json, Number(dados.quantidade), TIPOS_DO_PROFESSOR); }
+function limparUmaQuestao(json, dados) { return limparQuestoes(json, 1, [dados.tipo]); }
 
 // ---------- Correção de questões discursivas (Etapa 6) ----------
 function pedidoDeCorrecao(dados) {
@@ -192,13 +253,17 @@ function limparCorrecao(json, dados) {
 // Cada "tarefa" monta seu próprio pedido aqui no servidor.
 // Assim o app não consegue mandar qualquer pergunta para a IA.
 // Tarefas com "limpar" pedem JSON e conferem a resposta antes de devolver.
+// Tarefas com "professor" só funcionam com o código dos professores.
 const TAREFAS = {
   resumo: { montar: pedidoDeResumo },
   questionario: { montar: pedidoDeQuestionario, limpar: limparQuestionario },
-  corrigir: { montar: pedidoDeCorrecao, limpar: limparCorrecao }
+  corrigir: { montar: pedidoDeCorrecao, limpar: limparCorrecao },
+  'professor-entrar': { professor: true, semIA: true },
+  atividade: { professor: true, montar: pedidoDeAtividade, limpar: limparAtividade },
+  questao: { professor: true, montar: pedidoDeUmaQuestao, limpar: limparUmaQuestao }
 };
 
-async function chamarOpenAI(pedido, querJson, perfil) {
+async function chamarOpenAI(pedido, querJson, perfil, paraProfessor) {
   const resposta = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -208,7 +273,7 @@ async function chamarOpenAI(pedido, querJson, perfil) {
     body: JSON.stringify({
       model: process.env.OPENAI_MODELO || MODELO_PADRAO,
       messages: [
-        { role: 'system', content: instrucoesGerais(perfil) + (querJson ? FORMATO_JSON : FORMATO_TEXTO) },
+        { role: 'system', content: instrucoesGerais(perfil, paraProfessor) + (querJson ? FORMATO_JSON : FORMATO_TEXTO) },
         { role: 'user', content: pedido }
       ],
       response_format: querJson ? { type: 'json_object' } : undefined,
@@ -232,21 +297,38 @@ module.exports = async function (req, res) {
     res.status(500).json({ erro: 'A IA ainda não foi configurada na Vercel.' });
     return;
   }
-  if (req.headers['x-codigo-escola'] !== process.env.CODIGO_ESCOLA) {
-    res.status(401).json({ erro: 'Código da escola incorreto.' });
-    return;
-  }
 
   const dados = req.body || {};
   const tarefa = TAREFAS[dados.tarefa];
-  const pedido = tarefa ? tarefa.montar(dados) : null;
+  if (!tarefa) {
+    res.status(400).json({ erro: 'Pedido desconhecido.' });
+    return;
+  }
+
+  // Quem pode usar: professor com o código dos professores; aluno com o código da escola
+  const ehProfessor = !!process.env.CODIGO_PROFESSOR && req.headers['x-codigo-professor'] === process.env.CODIGO_PROFESSOR;
+  const ehDaEscola = req.headers['x-codigo-escola'] === process.env.CODIGO_ESCOLA;
+  if (tarefa.professor && !process.env.CODIGO_PROFESSOR) {
+    res.status(500).json({ erro: 'O código dos professores ainda não foi configurado na Vercel.' });
+    return;
+  }
+  if (tarefa.professor ? !ehProfessor : !(ehDaEscola || ehProfessor)) {
+    res.status(401).json({ erro: tarefa.professor ? 'Código do professor incorreto.' : 'Código da escola incorreto.' });
+    return;
+  }
+  if (tarefa.semIA) {
+    res.status(200).json({ dados: { ok: true } });
+    return;
+  }
+
+  const pedido = tarefa.montar(dados);
   if (!pedido) {
     res.status(400).json({ erro: 'Pedido incompleto. Confira os campos e tente de novo.' });
     return;
   }
 
   try {
-    const texto = await chamarOpenAI(pedido, !!tarefa.limpar, dados.perfil);
+    const texto = await chamarOpenAI(pedido, !!tarefa.limpar, dados.perfil, !!tarefa.professor);
     if (!tarefa.limpar) {
       res.status(200).json({ texto: texto });
       return;

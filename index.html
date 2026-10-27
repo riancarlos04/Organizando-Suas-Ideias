@@ -58,7 +58,7 @@
 
     <nav class="menu-lateral" data-menu="professor" aria-label="Menu do professor">
       <a href="#/professor">Início</a>
-      <a href="#/professor/atividade">Criar atividade <small>Etapa 8</small></a>
+      <a href="#/professor/atividade">Criar atividade</a>
       <a href="#/professor/prova">Criar prova <small>Etapa 9</small></a>
       <a href="#/professor/plano">Plano de aula <small>Etapa 9</small></a>
       <a href="#/professor/reforco">Reforço <small>Etapa 10</small></a>
@@ -277,6 +277,72 @@
       <p class="dica">A busca e as perguntas à IA chegam nas próximas etapas. Use o menu ☰ para navegar.</p>
     </section>
 
+    <!-- ========== TELA: entrada da área do professor (Etapa 8) ========== -->
+    <section data-tela="professor/entrar" class="tela tela-resumos" hidden>
+      <h1 tabindex="-1">Área do professor</h1>
+      <form class="form-resumo" id="form-entrar-professor">
+        <label for="codigo-professor">Código dos professores</label>
+        <p class="explica">Só os professores sabem esse código. Ele fica guardado neste aparelho.</p>
+        <input id="codigo-professor" type="password" autocomplete="off">
+        <button type="submit" class="botao-acao">Entrar</button>
+        <p class="erro" id="erro-entrar" hidden></p>
+      </form>
+      <a href="#/inicio">Voltar ao início</a>
+    </section>
+
+    <!-- ========== TELA: criar atividade (Etapa 8, ideia do EduFácil) ========== -->
+    <section data-tela="professor/atividade" class="tela tela-resumos" id="tela-atividade" hidden>
+      <h1 tabindex="-1">Criar atividade</h1>
+
+      <form class="form-resumo" id="form-atividade">
+        <label for="a-materia">Matéria</label>
+        <select id="a-materia"></select>
+
+        <label for="a-ano">Ano/série</label>
+        <select id="a-ano" class="seletor-nivel"></select>
+
+        <label for="a-assunto">Assunto</label>
+        <input id="a-assunto" type="text" maxlength="200" placeholder="Ex.: Frações" autocomplete="off">
+
+        <fieldset class="tipos">
+          <legend>Número de questões</legend>
+          <label><input type="radio" name="a-quantidade" value="5"> 5</label>
+          <label><input type="radio" name="a-quantidade" value="10" checked> 10</label>
+          <label><input type="radio" name="a-quantidade" value="15"> 15</label>
+          <label><input type="radio" name="a-quantidade" value="20"> 20</label>
+        </fieldset>
+
+        <fieldset class="tipos">
+          <legend>Nível</legend>
+          <label><input type="radio" name="a-nivel" value="facil"> Fácil</label>
+          <label><input type="radio" name="a-nivel" value="medio" checked> Médio</label>
+          <label><input type="radio" name="a-nivel" value="dificil"> Difícil</label>
+        </fieldset>
+
+        <fieldset class="tipos">
+          <legend>Tipos de questão <small>(pode marcar mais de um)</small></legend>
+          <label><input type="checkbox" name="a-tipos" value="multipla" checked> Múltipla escolha</label>
+          <label><input type="checkbox" name="a-tipos" value="vf"> Verdadeiro ou falso</label>
+          <label><input type="checkbox" name="a-tipos" value="discursiva" checked> Discursiva</label>
+          <label><input type="checkbox" name="a-tipos" value="associacao"> Associação</label>
+          <label><input type="checkbox" name="a-tipos" value="interpretacao"> Interpretação de texto</label>
+        </fieldset>
+
+        <div class="resumo-botoes">
+          <button type="submit" class="botao-acao" id="botao-atividade">Gerar com IA</button>
+          <button type="button" class="botao-secundario" id="atividade-em-branco">Começar em branco</button>
+        </div>
+      </form>
+
+      <!-- Editor da atividade (montado pelo arquivo js/professor.js) -->
+      <div id="atividade-area" aria-live="polite"></div>
+
+      <section class="bloco">
+        <h2>Minhas atividades</h2>
+        <div id="lista-atividades"></div>
+      </section>
+    </section>
+
     <!-- ========== TELA 4: "em construção" (serve para todos os itens do menu) ========== -->
     <section data-tela="em-breve" class="tela tela-em-breve" hidden>
       <p class="etiqueta" id="em-breve-etapa">Etapa ?</p>
@@ -318,9 +384,12 @@
     <span id="parabens-texto"></span>
   </div>
 
+  <!-- Folha da atividade: só aparece na hora de imprimir (js/professor.js) -->
+  <div id="folha-impressao"></div>
+
   <footer class="rodape">
     <p>Projeto da Turma A · Ideia de Millena Vitória e Vanusa Macedo</p>
-    <p>Versão de teste · Etapa 7</p>
+    <p>Versão de teste · Etapa 8</p>
   </footer>
 
   <script src="js/cronograma.js"></script>
@@ -330,6 +399,7 @@
   <script src="js/resumos.js"></script>
   <script src="js/questionarios.js"></script>
   <script src="js/perfil.js"></script>
+  <script src="js/professor.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

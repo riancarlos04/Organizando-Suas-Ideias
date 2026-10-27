@@ -75,3 +75,30 @@ async function pedirIA(pedido) {
   }
   throw new Error('Código da escola incorreto.');
 }
+
+// Pedidos da área do professor: usam o código dos professores
+async function pedirIAProfessor(pedido) {
+  if (location.protocol === 'file:') {
+    throw new Error('Isso só funciona no site publicado na Vercel.');
+  }
+  let resposta;
+  try {
+    resposta = await fetch('api/ia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Codigo-Professor': ler('codigo-professor') || '' },
+      body: JSON.stringify(pedido)
+    });
+  } catch (erro) {
+    throw new Error('Não deu para falar com o servidor. Confira a internet. Isso só funciona no site publicado na Vercel.');
+  }
+  let json = {};
+  try { json = await resposta.json(); } catch (erro) {}
+  if (resposta.status === 401) {
+    guardar('codigo-professor', '');
+    throw new Error(json.erro || 'Código do professor incorreto.');
+  }
+  if (!resposta.ok || (!json.texto && !json.dados)) {
+    throw new Error(json.erro || 'A IA não respondeu. Isso só funciona no site publicado na Vercel.');
+  }
+  return json;
+}

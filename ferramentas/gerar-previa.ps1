@@ -24,6 +24,7 @@ $css
 $conteudo
 <script>
 if ('$bodyClass') document.body.classList.add('$bodyClass');
+window.MODO_PREVIA = true;   // na prévia a área do professor fica aberta, só para mostrar as telas
 $js
 </script>
 "@

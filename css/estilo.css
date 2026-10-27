@@ -524,6 +524,60 @@ a { color: var(--azul); }
 .ponto-fraco p { margin: 0; font-size: 17px; }
 .temas small { color: var(--cinza-texto); font-size: 13px; white-space: nowrap; }
 
+/* ---------- Editor de atividade do professor (Etapa 8) ---------- */
+.editor { display: grid; gap: 12px; }
+.editor input[type="text"], .editor textarea, .editor select {
+  font: inherit; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--linha);
+  background: var(--branco); color: var(--preto); min-width: 0; width: 100%;
+}
+.editor textarea { resize: vertical; }
+.editor input:focus, .editor textarea:focus, .editor select:focus { outline: none; border-color: var(--azul); }
+.titulo-editor { font-size: 20px !important; font-weight: 700; color: var(--roxo) !important; }
+.lista-editor { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.questao-editor { border: 2px solid var(--roxo); border-radius: var(--raio); padding: 12px 14px; display: grid; gap: 6px; }
+.questao-editor > label { font-weight: 700; font-size: 14px; color: var(--roxo); margin-top: 4px; }
+.questao-editor label small, .opcoes-editor legend small { font-weight: 400; color: var(--cinza-texto); }
+.questao-editor-topo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.questao-editor-topo small { color: var(--cinza-texto); }
+.questao-editor-botoes { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.botao-secundario.pequeno { font-size: 13px; padding: 4px 12px; }
+.opcoes-editor { border: 0; padding: 0; margin: 4px 0 0; display: grid; gap: 6px; min-width: 0; }
+.opcoes-editor legend { font-weight: 700; font-size: 14px; color: var(--roxo); padding: 0; margin-bottom: 4px; }
+.opcao-editor, .par-editor { display: flex; align-items: center; gap: 8px; }
+.opcao-editor input[type="radio"] { width: 20px; height: 20px; accent-color: var(--azul); flex: none; margin: 0; }
+.opcao-editor label { font-weight: 700; flex: none; }
+.adicionar-questao { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.adicionar-questao label { font-weight: 700; color: var(--roxo); }
+.adicionar-questao select { width: auto; flex: 1; min-width: 160px; }
+.gabarito-professor { border: 2px solid var(--azul); border-radius: var(--raio); padding: 12px 16px; }
+.gabarito-professor h3 { margin: 0 0 8px; color: var(--azul); }
+.gabarito-professor ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+.gabarito-professor p { margin: 0; }
+
+/* ---------- Folha impressa: só aparece ao imprimir ---------- */
+#folha-impressao { display: none; }
+@media print {
+  @page { margin: 12mm; }
+  body > *:not(#folha-impressao) { display: none !important; }
+  body { display: block; min-height: 0; background: #fff; }
+  #folha-impressao { display: block !important; }
+  .folha { font: 10pt/1.35 Arial, Helvetica, sans-serif; color: #000; }
+  .folha-topo { border-bottom: 1px solid #000; padding-bottom: 4mm; margin-bottom: 4mm; }
+  .folha-topo h1 { font-size: 13pt; margin: 0 0 3mm; }
+  .folha-topo p { margin: 0; display: flex; gap: 6mm; align-items: baseline; }
+  .folha-campo { flex: 1; border-bottom: 1px solid #000; }
+  /* Duas colunas para gastar menos papel */
+  .folha-questoes { column-count: 2; column-gap: 8mm; margin: 0; padding-left: 5mm; }
+  .folha-questao { break-inside: avoid; margin-bottom: 4mm; }
+  .folha-questao p { margin: 0 0 1.5mm; }
+  .folha-texto { font-style: italic; border-left: 2px solid #000; padding-left: 2mm; }
+  .folha-opcoes { list-style: none; margin: 0; padding-left: 2mm; }
+  .folha-linhas span { display: block; height: 6mm; border-bottom: 1px solid #000; }
+  .folha-colunas { display: flex; gap: 4mm; }
+  .folha-colunas ol, .folha-colunas ul { margin: 0; padding-left: 5mm; flex: 1; }
+  .folha-colunas ul { list-style: none; padding-left: 0; }
+}
+
 /* Texto só para leitores de tela */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 

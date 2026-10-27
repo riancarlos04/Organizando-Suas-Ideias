@@ -6,7 +6,6 @@
 
 // Itens do menu que ainda não funcionam: em qual etapa cada um será construído
 const EM_BREVE = {
-  'professor/atividade': { titulo: 'Criar atividade', etapa: 'Etapa 8' },
   'professor/prova':     { titulo: 'Criar prova', etapa: 'Etapa 9' },
   'professor/plano':     { titulo: 'Plano de aula', etapa: 'Etapa 9' },
   'professor/reforco':   { titulo: 'Reforço', etapa: 'Etapa 10' },
@@ -65,6 +64,11 @@ function mostrarTela() {
     location.replace('#/aluno/perfil');
     return;
   }
+  // Área do professor: pede o código dos professores (arquivo professor.js)
+  if (perfil === 'professor' && !professorLiberado() && rota !== 'professor/entrar') {
+    location.replace('#/professor/entrar');
+    return;
+  }
 
   let tela = rota;
   const pagina = EM_BREVE[rota];
@@ -108,6 +112,7 @@ function mostrarTela() {
   if (tela === 'aluno/resumos') desenharResumos();
   if (tela === 'aluno/questionarios') desenharQuestionarios();
   if (tela === 'aluno/perfil') desenharPerfil();
+  if (tela === 'professor/atividade') desenharAtividades();
   if (tela === 'aluno') atualizarSaudacao();
   preencherNivelDosFormularios();
   mostrarCronometro();

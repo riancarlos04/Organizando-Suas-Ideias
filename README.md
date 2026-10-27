@@ -17,6 +17,7 @@ A IA (Resumos) não funciona assim. Ela só funciona com o site publicado na Ver
 3. Em **Settings → Environment Variables**, crie:
    - `OPENAI_API_KEY`: a chave da OpenAI (criada em platform.openai.com → API keys)
    - `CODIGO_ESCOLA`: o código que os alunos digitam para usar a IA
+   - `CODIGO_PROFESSOR`: o código da área do professor (só os professores sabem)
    - `OPENAI_MODELO` (opcional): o modelo da OpenAI. Se ficar vazio, usa `gpt-4o-mini`.
 4. Clique em **Redeploy** para as variáveis valerem.
 
@@ -36,6 +37,7 @@ A chave da OpenAI fica só na Vercel. Ela nunca aparece no site nem no celular d
 | `js/resumos.js` | Resumos com IA (Etapa 5) |
 | `js/questionarios.js` | Questionários com IA, correção e resultado (Etapa 6) |
 | `js/perfil.js` | Perfil do aluno, cadastro rápido e pontos fracos (Etapa 7) |
+| `js/professor.js` | Área do professor: código de entrada e criar atividade para imprimir (Etapa 8) |
 | `api/ia.js` | Roda no servidor da Vercel: guarda a chave da OpenAI e monta os pedidos para a IA |
 | `manifest.webmanifest` | Nome e ícone quando o site é instalado como app |
 | `sw.js` | Faz o app abrir rápido e funcionar sem internet |
