@@ -21,12 +21,20 @@
 </head>
 <body>
 
+  <!-- Abertura: o cérebro aparece no centro e depois vai para o lugar dele (js/app.js) -->
+  <div class="abertura" id="abertura" aria-hidden="true">
+    <img src="icones/logo.png" alt="" id="abertura-logo" width="480" height="443">
+  </div>
+
   <!-- Barra roxa do topo -->
   <header class="topo">
     <button class="botao-gaveta" id="abrir-menu" type="button" aria-label="Abrir menu" aria-controls="gaveta" aria-expanded="false" hidden>
       <span></span><span></span><span></span>
     </button>
-    <a class="topo-nome" href="#/inicio">Organizando Seus Conhecimentos</a>
+    <a class="topo-nome" href="#/inicio">
+      <img class="topo-logo" src="icones/logo.png" alt="" width="480" height="443">
+      Organizando Seus Conhecimentos
+    </a>
   </header>
 
   <!-- ========== MENU LATERAL (gaveta que abre pelo botão ☰) ========== -->

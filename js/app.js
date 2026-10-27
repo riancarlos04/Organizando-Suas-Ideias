@@ -121,6 +121,41 @@ function mostrarTela() {
 window.addEventListener('hashchange', mostrarTela);
 mostrarTela();
 
+// ---------- Abertura: o cérebro vai do centro da tela para o lugar dele ----------
+function animarAbertura() {
+  const abertura = document.getElementById('abertura');
+  const logo = document.getElementById('abertura-logo');
+  // Destino: o logo grande da tela de escolha, ou o pequeno da barra roxa
+  const logoInicio = document.querySelector('[data-tela="inicio"]:not([hidden]) .logo');
+  const destino = logoInicio || document.querySelector('.topo-logo');
+  const semMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (semMovimento || !destino) {
+    abertura.remove();
+    return;
+  }
+
+  setTimeout(function () {
+    const de = logo.getBoundingClientRect();
+    const para = destino.getBoundingClientRect();
+    const escala = para.width / de.width;
+    const x = (para.left + para.width / 2) - (de.left + de.width / 2);
+    const y = (para.top + para.height / 2) - (de.top + de.height / 2);
+
+    destino.style.visibility = 'hidden';   // o logo "de verdade" aparece quando o que voa chega
+    logo.style.transition = 'transform .7s cubic-bezier(.6, 0, .2, 1)';
+    logo.style.transform = 'translate(' + x + 'px, ' + y + 'px) scale(' + escala + ')';
+    abertura.classList.add('saindo');      // o fundo branco some e o conteúdo aparece
+
+    function terminar() {
+      destino.style.visibility = '';
+      abertura.remove();
+    }
+    logo.addEventListener('transitionend', terminar, { once: true });
+    setTimeout(terminar, 1200);            // garantia, caso a animação não avise
+  }, 900);
+}
+animarAbertura();
+
 // ---------- Deixa o site funcionar como app (PWA) ----------
 // Só funciona quando o site está publicado (https), não abrindo o arquivo direto.
 if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {

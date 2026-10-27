@@ -4,7 +4,7 @@
 // Sempre tenta a versão mais nova primeiro (internet) e só
 // usa a cópia guardada quando está sem conexão.
 // =========================================================
-const CACHE = 'organizando-v14';
+const CACHE = 'organizando-v15';
 const ARQUIVOS = [
   './',
   'index.html',
