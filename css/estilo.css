@@ -72,21 +72,6 @@ a { color: var(--azul); }
 .barra { height: 10px; border-radius: 999px; background: var(--azul-claro); overflow: hidden; }
 .barra i { display: block; height: 100%; background: var(--azul); }
 
-/* ---------- Progresso do aluno (abaixo da barra roxa, à direita) ---------- */
-.faixa-progresso {
-  display: flex; justify-content: flex-end;
-  padding: 12px 16px 0;
-  width: 100%; max-width: 1000px; margin: 0 auto;
-}
-.progresso-caixa {
-  display: grid; gap: 6px;
-  background: var(--roxo-claro); border: 2px solid var(--roxo); border-radius: var(--raio);
-  padding: 10px 14px; width: min(100%, 300px);
-}
-.progresso-titulo { font-weight: 700; color: var(--roxo); font-size: 15px; }
-.progresso-linha { display: flex; align-items: center; gap: 10px; }
-.barra-grande { flex: 1; height: 16px; background: var(--branco); border: 1px solid var(--linha); }
-.progresso-linha strong { font-size: 20px; font-variant-numeric: tabular-nums; min-width: 4ch; text-align: right; }
 
 /* ---------- Menu lateral (gaveta) ---------- */
 .fundo-gaveta { position: fixed; inset: 0; z-index: 20; background: rgba(0, 0, 0, .4); }
@@ -389,6 +374,8 @@ a { color: var(--azul); }
 }
 .cartao-numero:first-child { grid-column: 1 / -1; background: var(--roxo); color: var(--branco); }
 .cartao-numero:first-child .rotulo, .cartao-numero:first-child .cartao-detalhe { color: var(--branco); }
+.progresso-linha { display: flex; align-items: center; gap: 12px; }
+.barra-progresso { flex: 1; height: 16px; background: var(--branco); }
 .numero-grande { margin: 0; font-size: 34px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .cartao-detalhe { margin: 0; font-size: 13px; color: var(--cinza-texto); }
 @media (min-width: 560px) {

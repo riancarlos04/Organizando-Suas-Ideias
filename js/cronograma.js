@@ -188,7 +188,6 @@ painelSemana.addEventListener('change', function (evento) {
   assunto.feito = caixa.checked;
   salvarCronograma();
   desenharSemana();
-  atualizarProgresso();
   focar(caixa.id);
 });
 
@@ -217,7 +216,6 @@ painelMaterias.addEventListener('click', function (evento) {
     cronograma.materias[materia].assuntos = assuntos.filter(function (a) { return a.id !== alvo.dataset.remover; });
     salvarCronograma();
     desenharMaterias();
-    atualizarProgresso();
     focar('novo-' + MATERIAS.indexOf(materia));
   }
 });
@@ -235,7 +233,6 @@ painelMaterias.addEventListener('submit', function (evento) {
   });
   salvarCronograma();
   desenharMaterias();
-  atualizarProgresso();
   focar(campo.id);
 });
 

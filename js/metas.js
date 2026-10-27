@@ -95,7 +95,6 @@ listaMetas.addEventListener('change', function (evento) {
   meta.feita = caixa.checked;
   salvarMetas();
   desenharMetas();
-  atualizarProgresso();
   if (meta.feita) mostrarMensagem('Parabéns!', 'Você cumpriu sua meta: ' + meta.texto);
   focar(caixa.id);
 });
@@ -106,7 +105,6 @@ listaMetas.addEventListener('click', function (evento) {
   metas = metas.filter(function (m) { return m.id !== alvo.dataset.removerMeta; });
   salvarMetas();
   desenharMetas();
-  atualizarProgresso();
   focar('meta-texto');
 });
 
@@ -136,6 +134,5 @@ document.getElementById('form-meta').addEventListener('submit', function (evento
   campoPrazo.hidden = true;
   campoPrazo.value = '';
   desenharMetas();
-  atualizarProgresso();
   campoTexto.focus();
 });

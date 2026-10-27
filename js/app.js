@@ -83,7 +83,6 @@ function mostrarTela() {
     delete document.body.dataset.perfil;
   }
   botaoAbrir.hidden = !document.body.dataset.perfil;
-  document.getElementById('faixa-progresso').hidden = document.body.dataset.perfil !== 'aluno';
   document.querySelectorAll('[data-menu]').forEach(function (parte) {
     parte.hidden = parte.dataset.menu !== document.body.dataset.perfil;
   });
@@ -102,7 +101,6 @@ function mostrarTela() {
   if (tela === 'aluno/desempenho') desenharDesempenho();
   if (tela === 'aluno/resumos') desenharResumos();
   if (tela === 'aluno/questionarios') desenharQuestionarios();
-  atualizarProgresso();
   mostrarCronometro();
 
   // Leva o leitor de tela e o foco para o título da tela nova

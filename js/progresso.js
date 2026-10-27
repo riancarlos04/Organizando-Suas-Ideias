@@ -23,7 +23,7 @@ function salvarSessoes() {
   } catch (erro) {}
 }
 
-// ---------- Progresso geral (barra do topo) ----------
+// ---------- Progresso geral (mostrado só no painel "Meu desempenho") ----------
 function contarAssuntos(materia) {
   const lista = materia ? cronograma.materias[materia].assuntos : MATERIAS.reduce(function (todos, m) {
     return todos.concat(cronograma.materias[m].assuntos);
@@ -35,12 +35,6 @@ function calcularProgresso() {
   const total = assuntos.total + metas.length;
   const feitos = assuntos.feitos + metas.filter(function (m) { return m.feita; }).length;
   return total ? Math.round(feitos / total * 100) : 0;
-}
-function atualizarProgresso() {
-  const porcentagem = calcularProgresso();
-  document.getElementById('progresso-barra').style.width = porcentagem + '%';
-  document.getElementById('progresso-numero').textContent = porcentagem + '%';
-  document.querySelector('.barra-grande').setAttribute('aria-valuenow', porcentagem);
 }
 
 // ---------- Tempo ----------
@@ -139,9 +133,13 @@ function desenharDesempenho() {
     else comparacao = 'Igual à semana passada';
   }
 
-  // Cartões com os números principais
+  // Cartões com os números principais (o primeiro tem a barra de progresso)
+  const progresso = calcularProgresso();
   let html = '<div class="cartoes">' +
-    cartao('Progresso geral', calcularProgresso() + '%', 'Assuntos riscados e metas cumpridas') +
+    '<div class="cartao-numero"><p class="rotulo">Seu progresso</p>' +
+    '<div class="progresso-linha"><div class="barra barra-progresso" role="progressbar" aria-label="Seu progresso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + progresso + '">' +
+    '<i style="width:' + progresso + '%"></i></div><p class="numero-grande">' + progresso + '%</p></div>' +
+    '<p class="cartao-detalhe">Assuntos riscados e metas cumpridas</p></div>' +
     cartao('Assuntos estudados', assuntos.feitos, 'de ' + plural(assuntos.total, 'assunto', 'assuntos') + ' no cronograma') +
     cartao('Metas cumpridas', metasCumpridas, 'de ' + plural(metas.length, 'meta', 'metas')) +
     cartao('Estudo nesta semana', formatarTempo(estaSemana), comparacao) +
