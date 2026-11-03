@@ -14,19 +14,23 @@ function tokenSalvo() {
   return ler('sessao-token');
 }
 
-// Verifica a sessão uma vez, ao abrir o app. Nunca trava a tela por erro de rede.
+// Verifica a sessão uma vez, ao abrir o app. Nunca trava a tela por erro de rede
+// (dá no máximo 6 segundos de espera, depois segue como se estivesse deslogado).
 async function carregarSessao() {
   const token = tokenSalvo();
-  if (!token) {
+  if (!token || location.protocol === 'file:') {
     sessaoAtual = null;
     sessaoCarregada = true;
     return;
   }
+  const controle = new AbortController();
+  const tempoLimite = setTimeout(function () { controle.abort(); }, 6000);
   try {
     const resposta = await fetch('api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ acao: 'sessao' })
+      body: JSON.stringify({ acao: 'sessao' }),
+      signal: controle.signal
     });
     if (resposta.ok) {
       sessaoAtual = await resposta.json();
@@ -35,8 +39,10 @@ async function carregarSessao() {
       sessaoAtual = null;
     }
   } catch (erro) {
-    // Sem internet: trata como deslogado por agora, sem apagar o token salvo.
+    // Sem internet ou demorou demais: trata como deslogado por agora, sem apagar o token salvo.
     sessaoAtual = null;
+  } finally {
+    clearTimeout(tempoLimite);
   }
   sessaoCarregada = true;
 }

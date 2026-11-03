@@ -139,7 +139,11 @@ function mostrarTela() {
 }
 
 window.addEventListener('hashchange', mostrarTela);
-carregarSessao().then(mostrarTela);
+carregarSessao().catch(function (erro) {
+  console.error('Falha ao verificar sessão:', erro);
+  sessaoAtual = null;
+  sessaoCarregada = true;
+}).then(mostrarTela);
 
 // ---------- Abertura: o cérebro vai do centro da tela para o lugar dele ----------
 function animarAbertura() {
