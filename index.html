@@ -68,6 +68,7 @@
     <div class="gaveta-rodape">
       <p class="credito" data-menu="professor">Com ideias do projeto EduFácil</p>
       <a class="botao-trocar" href="#/inicio">Trocar perfil</a>
+      <button type="button" class="botao-trocar" data-sair>Sair</button>
     </div>
   </aside>
 
@@ -89,6 +90,41 @@
           <span>Atividades, provas e planos de aula</span>
         </a>
       </div>
+    </section>
+
+    <!-- ========== TELA: entrada do aluno (Etapa 10) ========== -->
+    <section data-tela="aluno/entrar" class="tela tela-resumos" hidden>
+      <h1 tabindex="-1">Entrar</h1>
+      <form class="form-resumo" id="form-entrar-aluno">
+        <label for="entrar-aluno-usuario">Usuário</label>
+        <input id="entrar-aluno-usuario" type="text" autocomplete="username" required>
+        <label for="entrar-aluno-senha">Senha</label>
+        <input id="entrar-aluno-senha" type="password" autocomplete="current-password" required>
+        <button type="submit" class="botao-acao">Entrar</button>
+        <p class="erro" id="erro-entrar-aluno" hidden></p>
+        <p class="carregando" id="pendente-entrar-aluno" hidden>Seu cadastro ainda não foi aprovado pela escola. Tente de novo mais tarde.</p>
+      </form>
+      <p><a href="#/aluno/cadastro">Ainda não tenho conta</a></p>
+      <a href="#/inicio">Voltar ao início</a>
+    </section>
+
+    <!-- ========== TELA: cadastro do aluno (Etapa 10) ========== -->
+    <section data-tela="aluno/cadastro" class="tela tela-resumos" hidden>
+      <h1 tabindex="-1">Criar conta de aluno</h1>
+      <form class="form-resumo" id="form-cadastro-aluno">
+        <label for="cadastro-aluno-nome">Seu nome</label>
+        <input id="cadastro-aluno-nome" type="text" maxlength="100" autocomplete="name" required>
+        <label for="cadastro-aluno-usuario">Usuário</label>
+        <input id="cadastro-aluno-usuario" type="text" maxlength="50" autocomplete="username" required>
+        <label for="cadastro-aluno-senha">Senha</label>
+        <input id="cadastro-aluno-senha" type="password" autocomplete="new-password" minlength="4" required>
+        <label for="cadastro-aluno-confirmar">Confirmar senha</label>
+        <input id="cadastro-aluno-confirmar" type="password" autocomplete="new-password" minlength="4" required>
+        <button type="submit" class="botao-acao">Cadastrar</button>
+        <p class="erro" id="erro-cadastro-aluno" hidden></p>
+        <p class="carregando" id="sucesso-cadastro-aluno" hidden>Cadastro enviado! Aguarde a aprovação da escola.</p>
+      </form>
+      <a href="#/aluno/entrar">Já tenho conta</a>
     </section>
 
     <!-- ========== TELA 2: início do aluno ========== -->
@@ -217,9 +253,6 @@
       <p class="explica" id="perfil-explica"></p>
 
       <form class="form-resumo" id="form-perfil">
-        <label for="perfil-nome">Seu nome <small>(opcional)</small></label>
-        <input id="perfil-nome" type="text" maxlength="40" placeholder="Como você quer ser chamado?" autocomplete="off">
-
         <label for="perfil-nivel">Nível de ensino</label>
         <select id="perfil-nivel" class="seletor-nivel" required></select>
 
@@ -277,17 +310,46 @@
       <p class="dica">A busca e as perguntas à IA chegam nas próximas etapas. Use o menu ☰ para navegar.</p>
     </section>
 
-    <!-- ========== TELA: entrada da área do professor (Etapa 8) ========== -->
+    <!-- ========== TELA: entrada do professor (Etapa 10) ========== -->
     <section data-tela="professor/entrar" class="tela tela-resumos" hidden>
       <h1 tabindex="-1">Área do professor</h1>
       <form class="form-resumo" id="form-entrar-professor">
-        <label for="codigo-professor">Código dos professores</label>
-        <p class="explica">Só os professores sabem esse código. Ele fica guardado neste aparelho.</p>
-        <input id="codigo-professor" type="password" autocomplete="off">
+        <label for="entrar-professor-usuario">Usuário</label>
+        <input id="entrar-professor-usuario" type="text" autocomplete="username" required>
+        <label for="entrar-professor-senha">Senha</label>
+        <input id="entrar-professor-senha" type="password" autocomplete="current-password" required>
         <button type="submit" class="botao-acao">Entrar</button>
-        <p class="erro" id="erro-entrar" hidden></p>
+        <p class="erro" id="erro-entrar-professor" hidden></p>
+        <p class="carregando" id="pendente-entrar-professor" hidden>Seu cadastro ainda não foi aprovado pela escola. Tente de novo mais tarde.</p>
       </form>
+      <p><a href="#/professor/cadastro">Ainda não tenho conta</a></p>
       <a href="#/inicio">Voltar ao início</a>
+    </section>
+
+    <!-- ========== TELA: cadastro do professor (Etapa 10) ========== -->
+    <section data-tela="professor/cadastro" class="tela tela-resumos" hidden>
+      <h1 tabindex="-1">Criar conta de professor</h1>
+      <form class="form-resumo" id="form-cadastro-professor">
+        <label for="cadastro-professor-nome">Seu nome</label>
+        <input id="cadastro-professor-nome" type="text" maxlength="100" autocomplete="name" required>
+        <label for="cadastro-professor-usuario">Usuário</label>
+        <input id="cadastro-professor-usuario" type="text" maxlength="50" autocomplete="username" required>
+        <label for="cadastro-professor-senha">Senha</label>
+        <input id="cadastro-professor-senha" type="password" autocomplete="new-password" minlength="4" required>
+        <label for="cadastro-professor-confirmar">Confirmar senha</label>
+        <input id="cadastro-professor-confirmar" type="password" autocomplete="new-password" minlength="4" required>
+        <button type="submit" class="botao-acao">Cadastrar</button>
+        <p class="erro" id="erro-cadastro-professor" hidden></p>
+        <p class="carregando" id="sucesso-cadastro-professor" hidden>Cadastro enviado! Aguarde a aprovação da escola.</p>
+      </form>
+      <a href="#/professor/entrar">Já tenho conta</a>
+    </section>
+
+    <!-- ========== TELA: painel do administrador (Etapa 10a) ========== -->
+    <section data-tela="admin" class="tela tela-resumos" hidden>
+      <h1 tabindex="-1">Painel do administrador</h1>
+      <p class="explica">Aprove ou rejeite os cadastros de alunos e professores.</p>
+      <div id="painel-admin"></div>
     </section>
 
     <!-- ========== TELA: criar atividade (Etapa 8, ideia do EduFácil) ========== -->
@@ -364,20 +426,6 @@
     <button type="button" class="cronometro-cancelar" id="cronometro-cancelar">Cancelar</button>
   </div>
 
-  <!-- Janelinha do código da escola (aparece na primeira vez que alguém usa a IA) -->
-  <div class="fundo-dialogo" id="dialogo-codigo" hidden>
-    <form class="dialogo" id="form-codigo" role="dialog" aria-modal="true" aria-labelledby="titulo-codigo">
-      <h2 id="titulo-codigo">Código da escola</h2>
-      <p id="codigo-mensagem">Peça o código ao professor. Ele fica guardado neste aparelho.</p>
-      <label class="sr" for="codigo-escola">Código da escola</label>
-      <input id="codigo-escola" type="password" autocomplete="off">
-      <div class="resumo-botoes">
-        <button type="submit" class="botao-acao">Salvar código</button>
-        <button type="button" class="botao-secundario" id="cancelar-codigo">Cancelar</button>
-      </div>
-    </form>
-  </div>
-
   <!-- Mensagem que aparece embaixo (parabéns pela meta, estudo registrado...) -->
   <div class="parabens" id="parabens" role="status" aria-live="polite" hidden>
     <strong id="parabens-titulo">Parabéns!</strong>
@@ -389,17 +437,19 @@
 
   <footer class="rodape">
     <p>Projeto da Turma A · Ideia de Millena Vitória e Vanusa Macedo</p>
-    <p>Versão de teste · Etapa 8</p>
+    <p>Versão de teste · Etapa 10</p>
   </footer>
 
   <script src="js/cronograma.js"></script>
   <script src="js/metas.js"></script>
   <script src="js/progresso.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/ia.js"></script>
   <script src="js/resumos.js"></script>
   <script src="js/questionarios.js"></script>
   <script src="js/perfil.js"></script>
   <script src="js/professor.js"></script>
+  <script src="js/admin.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

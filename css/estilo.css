@@ -473,6 +473,11 @@ a { color: var(--azul); }
 .abrir-resumo:hover { background: var(--roxo-claro); }
 .abrir-resumo span { font-size: 13px; color: var(--cinza-texto); }
 
+/* ---------- Painel do administrador ---------- */
+.lista-pendentes { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.pendente-linha { border: 2px solid var(--roxo); border-radius: var(--raio); padding: 10px 12px; display: grid; gap: 6px; }
+.pendente-linha p { margin: 0; font-size: 13px; color: var(--cinza-texto); }
+
 /* ---------- Janelinha do código da escola ---------- */
 .fundo-dialogo {
   position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, .45);

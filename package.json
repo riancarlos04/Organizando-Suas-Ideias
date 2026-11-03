@@ -1,0 +1,9 @@
+{
+  "name": "organizando-seus-conhecimentos",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2",
+    "bcryptjs": "^2",
+    "jsonwebtoken": "^9"
+  }
+}

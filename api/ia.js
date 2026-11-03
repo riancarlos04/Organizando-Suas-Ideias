@@ -1,14 +1,15 @@
 // =========================================================
 // Função que roda no servidor da Vercel (não no celular).
 // Ela guarda a chave da OpenAI escondida e só aceita pedidos
-// de quem tem o código de acesso da escola.
+// de quem está com uma sessão válida (login feito em api/auth.js).
 //
 // Configurar na Vercel (Settings → Environment Variables):
 //   OPENAI_API_KEY = chave da OpenAI (platform.openai.com)
-//   CODIGO_ESCOLA  = código que os alunos digitam no app
-//   CODIGO_PROFESSOR = código da área do professor (só os professores sabem)
+//   AUTH_JWT_SECRET = o mesmo texto usado em api/auth.js, para validar a sessão
 //   OPENAI_MODELO  = (opcional) modelo da OpenAI a usar
 // =========================================================
+
+const jwt = require('jsonwebtoken');
 
 const MODELO_PADRAO = 'gpt-4o-mini';
 
@@ -257,15 +258,25 @@ function limparCorrecao(json, dados) {
 // Cada "tarefa" monta seu próprio pedido aqui no servidor.
 // Assim o app não consegue mandar qualquer pergunta para a IA.
 // Tarefas com "limpar" pedem JSON e conferem a resposta antes de devolver.
-// Tarefas com "professor" só funcionam com o código dos professores.
+// Tarefas com "professor" só funcionam com sessão de professor (ou admin).
 const TAREFAS = {
   resumo: { montar: pedidoDeResumo },
   questionario: { montar: pedidoDeQuestionario, limpar: limparQuestionario },
   corrigir: { montar: pedidoDeCorrecao, limpar: limparCorrecao },
-  'professor-entrar': { professor: true, semIA: true },
   atividade: { professor: true, montar: pedidoDeAtividade, limpar: limparAtividade },
   questao: { professor: true, montar: pedidoDeUmaQuestao, limpar: limparUmaQuestao }
 };
+
+function sessaoValida(req) {
+  const cabecalho = req.headers.authorization || '';
+  const token = cabecalho.indexOf('Bearer ') === 0 ? cabecalho.slice(7) : '';
+  if (!token) return null;
+  try {
+    return jwt.verify(token, process.env.AUTH_JWT_SECRET);
+  } catch (erro) {
+    return null;
+  }
+}
 
 async function chamarOpenAI(pedido, querJson, perfil, paraProfessor) {
   const resposta = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -297,7 +308,7 @@ module.exports = async function (req, res) {
     res.status(405).json({ erro: 'Use POST.' });
     return;
   }
-  if (!process.env.OPENAI_API_KEY || !process.env.CODIGO_ESCOLA) {
+  if (!process.env.OPENAI_API_KEY || !process.env.AUTH_JWT_SECRET) {
     res.status(500).json({ erro: 'A IA ainda não foi configurada na Vercel.' });
     return;
   }
@@ -309,19 +320,14 @@ module.exports = async function (req, res) {
     return;
   }
 
-  // Quem pode usar: professor com o código dos professores; aluno com o código da escola
-  const ehProfessor = !!process.env.CODIGO_PROFESSOR && req.headers['x-codigo-professor'] === process.env.CODIGO_PROFESSOR;
-  const ehDaEscola = req.headers['x-codigo-escola'] === process.env.CODIGO_ESCOLA;
-  if (tarefa.professor && !process.env.CODIGO_PROFESSOR) {
-    res.status(500).json({ erro: 'O código dos professores ainda não foi configurado na Vercel.' });
+  const sessao = sessaoValida(req);
+  if (!sessao) {
+    res.status(401).json({ erro: 'Sessão expirada. Entre de novo.' });
     return;
   }
-  if (tarefa.professor ? !ehProfessor : !(ehDaEscola || ehProfessor)) {
-    res.status(401).json({ erro: tarefa.professor ? 'Código do professor incorreto.' : 'Código da escola incorreto.' });
-    return;
-  }
-  if (tarefa.semIA) {
-    res.status(200).json({ dados: { ok: true } });
+  const ehProfessor = sessao.papel === 'professor' || sessao.papel === 'admin';
+  if (tarefa.professor && !ehProfessor) {
+    res.status(401).json({ erro: 'Essa área é só para professores.' });
     return;
   }
 

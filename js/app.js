@@ -45,8 +45,14 @@ document.addEventListener('keydown', function (evento) {
   if (evento.key === 'Escape') fecharMenu();
 });
 
+// Rotas de aluno/professor que não exigem login (entrar e cadastro)
+const ROTAS_PUBLICAS = ['aluno/entrar', 'aluno/cadastro', 'professor/entrar', 'professor/cadastro'];
+
 // ---------- Troca de tela ----------
 function mostrarTela() {
+  // Ainda não sabemos se há sessão (1ª verificação, feita 1x no carregamento). Espera.
+  if (!sessaoCarregada) return;
+
   const rota = location.hash.replace('#/', '');
 
   // Sem endereço: volta para o último perfil usado (aluno ou professor)
@@ -59,14 +65,22 @@ function mostrarTela() {
   const perfil = rota.split('/')[0];
   const temPerfil = perfil === 'aluno' || perfil === 'professor';
 
-  // Primeira vez do aluno: cadastro rápido antes de tudo (arquivo perfil.js)
-  if (perfil === 'aluno' && !temPerfilAluno() && rota !== 'aluno/perfil') {
-    location.replace('#/aluno/perfil');
+  // Admin só acessa #/admin; quem não é admin nunca acessa #/admin
+  if (ehAdmin() && perfil !== 'admin') { location.replace('#/admin'); return; }
+  if (!ehAdmin() && perfil === 'admin') { location.replace('#/inicio'); return; }
+
+  // Aluno/professor sem login: só pode ver as telas de entrar/cadastro
+  if (perfil === 'aluno' && !estaLogado('aluno') && ROTAS_PUBLICAS.indexOf(rota) === -1) {
+    location.replace('#/aluno/entrar');
     return;
   }
-  // Área do professor: pede o código dos professores (arquivo professor.js)
-  if (perfil === 'professor' && !professorLiberado() && rota !== 'professor/entrar') {
+  if (perfil === 'professor' && !estaLogado('professor') && ROTAS_PUBLICAS.indexOf(rota) === -1) {
     location.replace('#/professor/entrar');
+    return;
+  }
+  // Aluno logado, mas ainda sem perfil educacional preenchido (nível, objetivo...)
+  if (perfil === 'aluno' && estaLogado('aluno') && !temPerfilAluno() && rota !== 'aluno/perfil') {
+    location.replace('#/aluno/perfil');
     return;
   }
 
@@ -113,6 +127,7 @@ function mostrarTela() {
   if (tela === 'aluno/questionarios') desenharQuestionarios();
   if (tela === 'aluno/perfil') desenharPerfil();
   if (tela === 'professor/atividade') desenharAtividades();
+  if (tela === 'admin') desenharAdmin();
   if (tela === 'aluno') atualizarSaudacao();
   preencherNivelDosFormularios();
   mostrarCronometro();
@@ -124,7 +139,7 @@ function mostrarTela() {
 }
 
 window.addEventListener('hashchange', mostrarTela);
-mostrarTela();
+carregarSessao().then(mostrarTela);
 
 // ---------- Abertura: o cérebro vai do centro da tela para o lugar dele ----------
 function animarAbertura() {

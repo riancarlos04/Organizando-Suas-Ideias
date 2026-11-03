@@ -3,7 +3,7 @@
 Este arquivo guarda o contexto das conversas com o Claude, para continuar de onde paramos em qualquer computador.
 O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final de cada etapa.**
 
-Última atualização: 27/10/2026, depois da Etapa 8 e da correção de respostas erradas da IA.
+Última atualização: 03/11/2026, depois da Etapa 10a (login real + aprovação por admin).
 
 ## Quem é quem
 
@@ -25,15 +25,18 @@ O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final d
 
 - **GitHub:** https://github.com/riancarlos04/Organizando-Suas-Ideias (branch `main`)
 - **Site:** publicado na Vercel (conta do professor), que atualiza sozinha a cada push.
-- **Prévia online** (feita pelo Claude): https://claude.ai/artifact/3abr9rkBYjinFFVFNSmHay. Ela é gerada com `ferramentas/gerar-previa.ps1`, que junta tudo num HTML só. Na prévia a IA não funciona e a área do professor fica aberta (`window.MODO_PREVIA`).
-- **Variáveis na Vercel:** `OPENAI_API_KEY`, `CODIGO_ESCOLA` (código dos alunos), `CODIGO_PROFESSOR` (código da área do professor) e `OPENAI_MODELO` (opcional; o padrão é `gpt-4o-mini`).
+- **Prévia online** (feita pelo Claude): https://claude.ai/artifact/3abr9rkBYjinFFVFNSmHay. Ela é gerada com `ferramentas/gerar-previa.ps1`, que junta tudo num HTML só. Na prévia a IA não funciona e a área do professor fica aberta (`window.MODO_PREVIA`). **Pendência:** a prévia ainda não foi atualizada para o novo fluxo de login da Etapa 10; hoje ela pode não refletir as telas de entrar/cadastro/admin.
+- **Banco de dados:** Supabase (projeto já criado pelo professor). Só a tabela `usuarios` existe até agora (script em `ferramentas/supabase.sql`). Cronograma/metas/resumos/questionários/atividades continuam no `localStorage`, não no banco.
+- **Variáveis na Vercel:** `OPENAI_API_KEY`, `OPENAI_MODELO` (opcional; padrão `gpt-4o-mini`), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (nunca a `anon`), `AUTH_JWT_SECRET` (string aleatória inventada, não vem do Supabase). As variáveis antigas `CODIGO_ESCOLA` e `CODIGO_PROFESSOR` foram removidas do código e devem ser apagadas da Vercel.
 
 ## Tecnologia
 
 - HTML, CSS e JavaScript puros, sem ferramentas de build, para a turma conseguir ler o código. É um PWA instalável (`manifest.webmanifest`, `sw.js`). **Aumentar a versão do `CACHE` no `sw.js` a cada mudança.**
-- Os dados ficam no `localStorage` de cada aparelho. Ainda não há login nem banco de dados.
+- Os dados de estudo (cronograma, metas, resumos, questionários, atividades) ficam no `localStorage` de cada aparelho. As **contas** (usuário, senha, aprovação) ficam no Supabase, desde a Etapa 10a.
 - A IA é a OpenAI, chamada só pela função da Vercel `api/ia.js`. A chave nunca vai para o navegador. O app manda uma **"tarefa"** e o servidor monta o pedido; não existe chat livre.
-- Ordem dos scripts no `index.html`: cronograma → metas → progresso → ia → resumos → questionarios → perfil → professor → app.
+- Login (Etapa 10a): nome de usuário + senha (sem e-mail), para aluno e professor. Tabela própria `usuarios` no Supabase (não usa o Supabase Auth nativo), com hash bcrypt da senha. Login emite um JWT próprio (`api/auth.js`, segredo em `AUTH_JWT_SECRET`), guardado no navegador em `localStorage` (`sessao-token`). Todo cadastro novo nasce com `status: 'pendente'` e só funciona depois que um **admin** aprovar em `#/admin` (`api/admin.js`). O client nunca fala direto com o Supabase — só pelas funções `api/*.js`, que usam a chave `service_role` (nunca exposta ao navegador).
+- O papel **admin** é separado de aluno/professor. Não tem tela de login própria: se o usuário+senha digitado em `#/aluno/entrar` OU `#/professor/entrar` pertencer a uma conta admin, o app abre `#/admin` em vez da área normal.
+- Ordem dos scripts no `index.html`: cronograma → metas → progresso → auth → ia → resumos → questionarios → perfil → professor → admin → app.
 - Navegação por `#/rota` em `js/app.js` (`mostrarTela`).
 - **Testes sem IA:** o Claude cria páginas no scratchpad com a prévia mais um `pedirIA` falso e abre no Edge sem janela (headless). Neste PC: o Python é só um atalho da loja; o Bash não roda `.ps1`, então scripts PowerShell rodam pela ferramenta PowerShell; o Git roda pelo Bash.
 
@@ -85,11 +88,20 @@ O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final d
    - impressão econômica (2 colunas, só nome e data no topo);
    - o gabarito fica só no app, e as atividades ficam em "Minhas atividades".
    - **Correção depois de um erro de matemática:** cada questão gerada traz um campo `resolucao` **antes** da resposta, para a IA resolver antes de marcar. Se ainda errar, a sugestão é trocar `OPENAI_MODELO` ou criar uma conferência automática (custa o dobro de pedidos).
+9. **Login real + aprovação por admin** (`js/auth.js`, `js/admin.js`, `api/auth.js`, `api/admin.js`, Etapa 10a, banco Supabase):
+   - LGPD já autorizada pela escola para guardar dados de alunos no Supabase.
+   - Aluno e professor se cadastram com nome + usuário + senha; todo cadastro nasce `pendente`.
+   - Um admin aprova/rejeita em `#/admin` (`js/admin.js`). Sem aprovação, o login mostra "aguardando aprovação" e não entra.
+   - As telas `#/aluno/entrar` e `#/professor/entrar` reconhecem contas admin automaticamente e abrem `#/admin` nessas duas portas (não existe uma 3ª tela de login de admin).
+   - Os códigos fixos antigos (`CODIGO_ESCOLA`, `CODIGO_PROFESSOR`) foram removidos do código; o professor precisa apagá-los da Vercel.
+   - **Escopo fechado para esta etapa:** só contas e aprovação. Cronograma/metas/resumos/questionários/atividades continuam em `localStorage`, sem migração — isso fica para a Etapa 10b.
+   - **Dados de teste antigos** (localStorage de testes anteriores à Etapa 10) foram perdidos de propósito — decisão combinada com o professor, sem migração automática.
+   - **Pendente do professor, fora do código:** rodar `ferramentas/supabase.sql` no Supabase, configurar as novas variáveis na Vercel (ver seção "Onde fica cada coisa") e testar o fluxo completo (cadastro → aprovação → login) antes de levar para a escola.
 
 ## Em aberto
 
-- **Próxima etapa proposta: Etapa 9, Criar prova + Plano de aula** (perguntas para a dupla do Davison). O professor ainda não confirmou a ordem.
-- **Ordem proposta depois:** Etapa 10 (login e senha + banco de dados) → Etapa 11 (turmas: o professor manda a atividade e o aluno recebe; notas e dificuldades da turma).
-- **Banco de dados:** o professor confirmou que vai precisar, para ligar alunos e professores. A sugestão é o Supabase (login + banco, grátis). O **cadastro de professor exige um código que só a escola sabe.** É preciso confirmar com a escola a LGPD (dados de alunos menores de idade).
+- **Etapa 10b (ainda não feita):** migrar cronograma, metas, resumos, questionários feitos, pesquisas e atividades do `localStorage` para o Supabase, associados à conta logada. É o item de maior volume de trabalho que ficou de fora da 10a de propósito.
+- **Próxima etapa proposta depois da 10b: Etapa 9, Criar prova + Plano de aula** (perguntas para a dupla do Davison) — a ordem numérica ficou invertida porque o login (originalmente Etapa 10) foi priorizado a pedido do professor; ok manter os números como estão ou renumerar, perguntar antes de seguir.
+- **Ordem proposta depois:** Etapa 11 (turmas: o professor manda a atividade e o aluno recebe; notas e dificuldades da turma).
 - **Ainda sem resposta:** se a atividade do professor chega ao aluno pelo app (por enquanto é só impressa) e se o modelo da IA será trocado.
 - **Opcionais no fim do ano:** correção de prova por foto (ideia do EduFácil) e apresentação final.

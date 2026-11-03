@@ -1,6 +1,6 @@
 // =========================================================
 // Área do professor: criar atividade (Etapa 8, ideia do EduFácil)
-// - Entrada com o código dos professores
+// - Entrada com login (usuário e senha), Etapa 10
 // - A IA cria a atividade (ou o professor começa em branco)
 // - O professor edita tudo e imprime em folha econômica
 // - O gabarito fica só no app
@@ -14,34 +14,6 @@ const TIPOS_ATIVIDADE = {
   associacao: 'Associação',
   interpretacao: 'Interpretação de texto'
 };
-
-// ---------- Entrada da área do professor ----------
-// Na prévia (sem servidor) a área fica aberta, só para mostrar as telas.
-function professorLiberado() {
-  return !!window.MODO_PREVIA || !!ler('codigo-professor');
-}
-
-document.getElementById('form-entrar-professor').addEventListener('submit', async function (evento) {
-  evento.preventDefault();
-  const campo = document.getElementById('codigo-professor');
-  const aviso = document.getElementById('erro-entrar');
-  const botao = this.querySelector('button');
-  if (!campo.value.trim()) return;
-  guardar('codigo-professor', campo.value.trim());
-  botao.disabled = true;
-  aviso.hidden = true;
-  try {
-    await pedirIAProfessor({ tarefa: 'professor-entrar' });
-    campo.value = '';
-    location.hash = '#/professor';
-  } catch (erro) {
-    guardar('codigo-professor', '');
-    aviso.textContent = erro.message;
-    aviso.hidden = false;
-  } finally {
-    botao.disabled = false;
-  }
-});
 
 // ---------- Guardar e carregar ----------
 let atividades = [];

@@ -1,7 +1,8 @@
 // =========================================================
 // Personalização e pontos fracos (Etapa 7)
-// - Cadastro rápido do aluno (nome, nível de ensino, objetivo,
-//   nível de conhecimento e tempo para estudar)
+// - Cadastro rápido do aluno (nível de ensino, objetivo,
+//   nível de conhecimento e tempo para estudar), depois do
+//   login (Etapa 10). O nome vem da conta, não deste formulário.
 // - O perfil vai junto nos pedidos à IA, para ela adaptar a explicação
 // - Pontos fracos: erros nos questionários + assuntos mais pesquisados
 // Tudo fica guardado só no aparelho.
@@ -50,7 +51,7 @@ function registrarPesquisa(assunto, materia) {
 
 // ---------- Saudação ----------
 function atualizarSaudacao() {
-  const nome = perfilAluno && perfilAluno.nome;
+  const nome = sessaoAtual && sessaoAtual.nome;
   document.getElementById('saudacao-aluno').textContent = 'Olá, ' + (nome || 'estudante') + '!';
 }
 
@@ -72,7 +73,6 @@ function desenharPerfil() {
     : 'O app usa estas respostas para adaptar os resumos e os questionários.';
   document.getElementById('botao-perfil').textContent = primeiraVez ? 'Começar' : 'Salvar';
   const p = perfilAluno || {};
-  document.getElementById('perfil-nome').value = p.nome || '';
   document.getElementById('perfil-nivel').value = p.nivelEnsino || '';
   marcarOpcao('perfil-objetivo', p.objetivo);
   marcarOpcao('perfil-conhecimento', p.conhecimento);
@@ -83,7 +83,6 @@ document.getElementById('form-perfil').addEventListener('submit', function (even
   evento.preventDefault();
   const primeiraVez = !temPerfilAluno();
   perfilAluno = {
-    nome: document.getElementById('perfil-nome').value.trim(),
     nivelEnsino: document.getElementById('perfil-nivel').value,
     objetivo: valorMarcado('perfil-objetivo'),
     conhecimento: valorMarcado('perfil-conhecimento'),
