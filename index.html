@@ -93,38 +93,46 @@
     </section>
 
     <!-- ========== TELA: entrada do aluno (Etapa 10) ========== -->
-    <section data-tela="aluno/entrar" class="tela tela-resumos" hidden>
-      <h1 tabindex="-1">Entrar</h1>
-      <form class="form-resumo" id="form-entrar-aluno">
-        <label for="entrar-aluno-usuario">Usuário</label>
-        <input id="entrar-aluno-usuario" type="text" autocomplete="username" required>
-        <label for="entrar-aluno-senha">Senha</label>
-        <input id="entrar-aluno-senha" type="password" autocomplete="current-password" required>
-        <button type="submit" class="botao-acao">Entrar</button>
-        <p class="erro" id="erro-entrar-aluno" hidden></p>
-        <p class="carregando" id="pendente-entrar-aluno" hidden>Seu cadastro ainda não foi aprovado pela escola. Tente de novo mais tarde.</p>
-      </form>
-      <p><a href="#/aluno/cadastro">Ainda não tenho conta</a></p>
-      <a href="#/inicio">Voltar ao início</a>
+    <section data-tela="aluno/entrar" class="tela tela-auth" hidden>
+      <div class="cartao-auth">
+        <img class="auth-logo" src="icones/logo.png" alt="" width="480" height="443">
+        <h1 tabindex="-1">Entrar como aluno</h1>
+        <p class="auth-subtitulo">Use o usuário e a senha do seu cadastro.</p>
+        <form class="form-auth" id="form-entrar-aluno">
+          <label for="entrar-aluno-usuario">Usuário</label>
+          <input id="entrar-aluno-usuario" type="text" autocomplete="username" required>
+          <label for="entrar-aluno-senha">Senha</label>
+          <input id="entrar-aluno-senha" type="password" autocomplete="current-password" required>
+          <button type="submit" class="botao-acao">Entrar</button>
+          <p class="erro" id="erro-entrar-aluno" hidden></p>
+          <p class="carregando" id="pendente-entrar-aluno" hidden>Seu cadastro ainda não foi aprovado pela escola. Tente de novo mais tarde.</p>
+        </form>
+        <p class="auth-rodape"><a href="#/aluno/cadastro">Ainda não tenho conta</a></p>
+        <a class="auth-voltar" href="#/inicio">← Voltar ao início</a>
+      </div>
     </section>
 
     <!-- ========== TELA: cadastro do aluno (Etapa 10) ========== -->
-    <section data-tela="aluno/cadastro" class="tela tela-resumos" hidden>
-      <h1 tabindex="-1">Criar conta de aluno</h1>
-      <form class="form-resumo" id="form-cadastro-aluno">
-        <label for="cadastro-aluno-nome">Seu nome</label>
-        <input id="cadastro-aluno-nome" type="text" maxlength="100" autocomplete="name" required>
-        <label for="cadastro-aluno-usuario">Usuário</label>
-        <input id="cadastro-aluno-usuario" type="text" maxlength="50" autocomplete="username" required>
-        <label for="cadastro-aluno-senha">Senha</label>
-        <input id="cadastro-aluno-senha" type="password" autocomplete="new-password" minlength="4" required>
-        <label for="cadastro-aluno-confirmar">Confirmar senha</label>
-        <input id="cadastro-aluno-confirmar" type="password" autocomplete="new-password" minlength="4" required>
-        <button type="submit" class="botao-acao">Cadastrar</button>
-        <p class="erro" id="erro-cadastro-aluno" hidden></p>
-        <p class="carregando" id="sucesso-cadastro-aluno" hidden>Cadastro enviado! Aguarde a aprovação da escola.</p>
-      </form>
-      <a href="#/aluno/entrar">Já tenho conta</a>
+    <section data-tela="aluno/cadastro" class="tela tela-auth" hidden>
+      <div class="cartao-auth">
+        <img class="auth-logo" src="icones/logo.png" alt="" width="480" height="443">
+        <h1 tabindex="-1">Criar conta de aluno</h1>
+        <p class="auth-subtitulo">Depois de cadastrar, aguarde a escola aprovar seu acesso.</p>
+        <form class="form-auth" id="form-cadastro-aluno">
+          <label for="cadastro-aluno-nome">Seu nome</label>
+          <input id="cadastro-aluno-nome" type="text" maxlength="100" autocomplete="name" required>
+          <label for="cadastro-aluno-usuario">Usuário</label>
+          <input id="cadastro-aluno-usuario" type="text" maxlength="50" autocomplete="username" required>
+          <label for="cadastro-aluno-senha">Senha</label>
+          <input id="cadastro-aluno-senha" type="password" autocomplete="new-password" minlength="4" required>
+          <label for="cadastro-aluno-confirmar">Confirmar senha</label>
+          <input id="cadastro-aluno-confirmar" type="password" autocomplete="new-password" minlength="4" required>
+          <button type="submit" class="botao-acao">Cadastrar</button>
+          <p class="erro" id="erro-cadastro-aluno" hidden></p>
+          <p class="carregando" id="sucesso-cadastro-aluno" hidden>Cadastro enviado! Aguarde a aprovação da escola.</p>
+        </form>
+        <p class="auth-rodape"><a href="#/aluno/entrar">Já tenho conta</a></p>
+      </div>
     </section>
 
     <!-- ========== TELA 2: início do aluno ========== -->
@@ -311,38 +319,46 @@
     </section>
 
     <!-- ========== TELA: entrada do professor (Etapa 10) ========== -->
-    <section data-tela="professor/entrar" class="tela tela-resumos" hidden>
-      <h1 tabindex="-1">Área do professor</h1>
-      <form class="form-resumo" id="form-entrar-professor">
-        <label for="entrar-professor-usuario">Usuário</label>
-        <input id="entrar-professor-usuario" type="text" autocomplete="username" required>
-        <label for="entrar-professor-senha">Senha</label>
-        <input id="entrar-professor-senha" type="password" autocomplete="current-password" required>
-        <button type="submit" class="botao-acao">Entrar</button>
-        <p class="erro" id="erro-entrar-professor" hidden></p>
-        <p class="carregando" id="pendente-entrar-professor" hidden>Seu cadastro ainda não foi aprovado pela escola. Tente de novo mais tarde.</p>
-      </form>
-      <p><a href="#/professor/cadastro">Ainda não tenho conta</a></p>
-      <a href="#/inicio">Voltar ao início</a>
+    <section data-tela="professor/entrar" class="tela tela-auth" hidden>
+      <div class="cartao-auth">
+        <img class="auth-logo" src="icones/logo.png" alt="" width="480" height="443">
+        <h1 tabindex="-1">Área do professor</h1>
+        <p class="auth-subtitulo">Use o usuário e a senha do seu cadastro.</p>
+        <form class="form-auth" id="form-entrar-professor">
+          <label for="entrar-professor-usuario">Usuário</label>
+          <input id="entrar-professor-usuario" type="text" autocomplete="username" required>
+          <label for="entrar-professor-senha">Senha</label>
+          <input id="entrar-professor-senha" type="password" autocomplete="current-password" required>
+          <button type="submit" class="botao-acao">Entrar</button>
+          <p class="erro" id="erro-entrar-professor" hidden></p>
+          <p class="carregando" id="pendente-entrar-professor" hidden>Seu cadastro ainda não foi aprovado pela escola. Tente de novo mais tarde.</p>
+        </form>
+        <p class="auth-rodape"><a href="#/professor/cadastro">Ainda não tenho conta</a></p>
+        <a class="auth-voltar" href="#/inicio">← Voltar ao início</a>
+      </div>
     </section>
 
     <!-- ========== TELA: cadastro do professor (Etapa 10) ========== -->
-    <section data-tela="professor/cadastro" class="tela tela-resumos" hidden>
-      <h1 tabindex="-1">Criar conta de professor</h1>
-      <form class="form-resumo" id="form-cadastro-professor">
-        <label for="cadastro-professor-nome">Seu nome</label>
-        <input id="cadastro-professor-nome" type="text" maxlength="100" autocomplete="name" required>
-        <label for="cadastro-professor-usuario">Usuário</label>
-        <input id="cadastro-professor-usuario" type="text" maxlength="50" autocomplete="username" required>
-        <label for="cadastro-professor-senha">Senha</label>
-        <input id="cadastro-professor-senha" type="password" autocomplete="new-password" minlength="4" required>
-        <label for="cadastro-professor-confirmar">Confirmar senha</label>
-        <input id="cadastro-professor-confirmar" type="password" autocomplete="new-password" minlength="4" required>
-        <button type="submit" class="botao-acao">Cadastrar</button>
-        <p class="erro" id="erro-cadastro-professor" hidden></p>
-        <p class="carregando" id="sucesso-cadastro-professor" hidden>Cadastro enviado! Aguarde a aprovação da escola.</p>
-      </form>
-      <a href="#/professor/entrar">Já tenho conta</a>
+    <section data-tela="professor/cadastro" class="tela tela-auth" hidden>
+      <div class="cartao-auth">
+        <img class="auth-logo" src="icones/logo.png" alt="" width="480" height="443">
+        <h1 tabindex="-1">Criar conta de professor</h1>
+        <p class="auth-subtitulo">Depois de cadastrar, aguarde a escola aprovar seu acesso.</p>
+        <form class="form-auth" id="form-cadastro-professor">
+          <label for="cadastro-professor-nome">Seu nome</label>
+          <input id="cadastro-professor-nome" type="text" maxlength="100" autocomplete="name" required>
+          <label for="cadastro-professor-usuario">Usuário</label>
+          <input id="cadastro-professor-usuario" type="text" maxlength="50" autocomplete="username" required>
+          <label for="cadastro-professor-senha">Senha</label>
+          <input id="cadastro-professor-senha" type="password" autocomplete="new-password" minlength="4" required>
+          <label for="cadastro-professor-confirmar">Confirmar senha</label>
+          <input id="cadastro-professor-confirmar" type="password" autocomplete="new-password" minlength="4" required>
+          <button type="submit" class="botao-acao">Cadastrar</button>
+          <p class="erro" id="erro-cadastro-professor" hidden></p>
+          <p class="carregando" id="sucesso-cadastro-professor" hidden>Cadastro enviado! Aguarde a aprovação da escola.</p>
+        </form>
+        <p class="auth-rodape"><a href="#/professor/entrar">Já tenho conta</a></p>
+      </div>
     </section>
 
     <!-- ========== TELA: painel do administrador (Etapa 10a) ========== -->

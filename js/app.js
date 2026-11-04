@@ -55,9 +55,11 @@ function mostrarTela() {
 
   const rota = location.hash.replace('#/', '');
 
-  // Sem endereço: volta para o último perfil usado (aluno ou professor)
+  // Sem endereço: volta para o último perfil usado, só se ainda estiver logado nele
   if (rota === '') {
-    location.replace('#/' + (ler('perfil') || 'inicio'));
+    const ultimoPerfil = ler('perfil');
+    const vaiDireto = (ultimoPerfil === 'aluno' && estaLogado('aluno')) || (ultimoPerfil === 'professor' && estaLogado('professor')) || ehAdmin();
+    location.replace('#/' + (vaiDireto ? ultimoPerfil : 'inicio'));
     return;
   }
 
