@@ -4,19 +4,22 @@
 // quando cumprir. Aí aparece a mensagem de parabéns.
 // =========================================================
 
-// ---------- Guardar e carregar ----------
-function carregarMetas() {
+// ---------- Guardar e carregar (cada conta vê só as suas) ----------
+function dadosDasMetas() {
   try {
-    const dados = JSON.parse(localStorage.getItem('metas'));
+    const dados = JSON.parse(localStorage.getItem(chaveDoUsuario('metas')));
     if (Array.isArray(dados)) return dados;
   } catch (erro) {}
   return [];
 }
 function salvarMetas() {
-  try { localStorage.setItem('metas', JSON.stringify(metas)); } catch (erro) {}
+  try { localStorage.setItem(chaveDoUsuario('metas'), JSON.stringify(metas)); } catch (erro) {}
 }
 
-let metas = carregarMetas();
+let metas = [];
+function carregarMetas() { metas = dadosDasMetas(); }
+aoTrocarConta(carregarMetas);
+carregarMetas();
 
 // ---------- Datas ----------
 // Datas ficam guardadas como texto "2026-10-25" (ano-mês-dia)

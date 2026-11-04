@@ -14,6 +14,25 @@ function tokenSalvo() {
   return ler('sessao-token');
 }
 
+// Prefixo para cada chave do localStorage, para os dados de uma conta nunca
+// aparecerem para outra conta no mesmo aparelho. Sem login, cai num espaço
+// "convidado" (comportamento de antes da Etapa 10, só para não quebrar nada).
+function chaveDoUsuario(nome) {
+  const id = contaLogada && contaLogada.usuario_id;
+  return (id || 'convidado') + '-' + nome;
+}
+
+// Módulos de dados (resumos.js, cronograma.js, etc.) registram aqui como
+// recarregar os dados do localStorage quando a conta logada for conhecida
+// ou mudar (login, logout).
+const RECARREGAR_AO_TROCAR_CONTA = [];
+function aoTrocarConta(funcao) {
+  RECARREGAR_AO_TROCAR_CONTA.push(funcao);
+}
+function recarregarDadosDaConta() {
+  RECARREGAR_AO_TROCAR_CONTA.forEach(function (funcao) { funcao(); });
+}
+
 // Verifica a sessão uma vez, ao abrir o app. Nunca trava a tela por erro de rede
 // (dá no máximo 6 segundos de espera, depois segue como se estivesse deslogado).
 async function carregarSessao() {
@@ -45,6 +64,7 @@ async function carregarSessao() {
     clearTimeout(tempoLimite);
   }
   sessaoCarregada = true;
+  recarregarDadosDaConta();
 }
 
 function estaLogado(papel) {
@@ -57,6 +77,7 @@ function ehAdmin() {
 function encerrarSessao() {
   guardar('sessao-token', '');
   contaLogada = null;
+  recarregarDadosDaConta();
   location.hash = '#/inicio';
 }
 
@@ -129,7 +150,8 @@ async function entrar(papel, usuario, senha, aviso, avisoPendente) {
       return false;
     }
     guardar('sessao-token', json.token);
-    contaLogada = { papel: json.papel, nome: json.nome };
+    contaLogada = { papel: json.papel, nome: json.nome, usuario_id: json.usuario_id };
+    recarregarDadosDaConta();
     location.hash = json.papel === 'admin' ? '#/admin' : '#/' + papel;
     return true;
   } catch (erro) {

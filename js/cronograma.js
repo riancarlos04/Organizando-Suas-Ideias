@@ -20,10 +20,10 @@ const DIAS = [
   { numero: 0, curto: 'Dom', longo: 'Domingo' }
 ];
 
-// ---------- Guardar e carregar ----------
-function carregarCronograma() {
+// ---------- Guardar e carregar (cada conta vê só o seu) ----------
+function dadosDoCronograma() {
   let dados = null;
-  try { dados = JSON.parse(localStorage.getItem('cronograma')); } catch (erro) {}
+  try { dados = JSON.parse(localStorage.getItem(chaveDoUsuario('cronograma'))); } catch (erro) {}
   if (!dados || !dados.materias) dados = { materias: {} };
   MATERIAS.forEach(function (materia) {
     if (!dados.materias[materia]) dados.materias[materia] = { dias: [], assuntos: [] };
@@ -31,10 +31,15 @@ function carregarCronograma() {
   return dados;
 }
 function salvarCronograma() {
-  try { localStorage.setItem('cronograma', JSON.stringify(cronograma)); } catch (erro) {}
+  try { localStorage.setItem(chaveDoUsuario('cronograma'), JSON.stringify(cronograma)); } catch (erro) {}
 }
 
-const cronograma = carregarCronograma();
+const cronograma = { materias: {} };
+function carregarCronograma() {
+  cronograma.materias = dadosDoCronograma().materias;
+}
+aoTrocarConta(carregarCronograma);
+carregarCronograma();
 const hoje = new Date().getDay();
 let diaEscolhido = hoje;
 let abaAtual = 'semana';

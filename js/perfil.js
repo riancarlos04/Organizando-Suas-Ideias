@@ -14,17 +14,23 @@ const OPCOES_NIVEL_ENSINO = [
   ['concurso', 'Concurso ou vestibular']
 ];
 
-// ---------- Guardar e carregar ----------
-let perfilAluno = null;   // { nome, nivelEnsino, objetivo, conhecimento, tempo }
+// ---------- Guardar e carregar (cada conta vê só o seu) ----------
+let perfilAluno = null;   // { nivelEnsino, objetivo, conhecimento, tempo }
 let pesquisas = [];       // { assunto, materia, data }
-try {
-  perfilAluno = JSON.parse(localStorage.getItem('perfil-aluno'));
-  const guardadas = JSON.parse(localStorage.getItem('pesquisas'));
-  if (Array.isArray(guardadas)) pesquisas = guardadas;
-} catch (erro) {}
+function carregarPerfil() {
+  perfilAluno = null;
+  pesquisas = [];
+  try {
+    perfilAluno = JSON.parse(localStorage.getItem(chaveDoUsuario('perfil-aluno')));
+    const guardadas = JSON.parse(localStorage.getItem(chaveDoUsuario('pesquisas')));
+    if (Array.isArray(guardadas)) pesquisas = guardadas;
+  } catch (erro) {}
+}
+aoTrocarConta(carregarPerfil);
+carregarPerfil();
 
 function salvarPerfil() {
-  try { localStorage.setItem('perfil-aluno', JSON.stringify(perfilAluno)); } catch (erro) {}
+  try { localStorage.setItem(chaveDoUsuario('perfil-aluno'), JSON.stringify(perfilAluno)); } catch (erro) {}
 }
 function temPerfilAluno() {
   return !!(perfilAluno && perfilAluno.nivelEnsino);
@@ -46,7 +52,7 @@ function registrarPesquisa(assunto, materia) {
   if (!assunto) return;
   pesquisas.push({ assunto: assunto, materia: materia || '', data: dataDeHoje() });
   pesquisas = pesquisas.slice(-200);
-  try { localStorage.setItem('pesquisas', JSON.stringify(pesquisas)); } catch (erro) {}
+  try { localStorage.setItem(chaveDoUsuario('pesquisas'), JSON.stringify(pesquisas)); } catch (erro) {}
 }
 
 // ---------- Saudação ----------

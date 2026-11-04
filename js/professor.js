@@ -15,17 +15,22 @@ const TIPOS_ATIVIDADE = {
   interpretacao: 'Interpretação de texto'
 };
 
-// ---------- Guardar e carregar ----------
+// ---------- Guardar e carregar (cada conta vê só as suas) ----------
 let atividades = [];
-try {
-  const guardadas = JSON.parse(localStorage.getItem('atividades'));
-  if (Array.isArray(guardadas)) atividades = guardadas;
-} catch (erro) {}
-function salvarAtividades() {
-  try { localStorage.setItem('atividades', JSON.stringify(atividades)); } catch (erro) {}
-}
-
 let atividadeAberta = null;
+function carregarAtividades() {
+  atividades = [];
+  atividadeAberta = null;
+  try {
+    const guardadas = JSON.parse(localStorage.getItem(chaveDoUsuario('atividades')));
+    if (Array.isArray(guardadas)) atividades = guardadas;
+  } catch (erro) {}
+}
+aoTrocarConta(carregarAtividades);
+carregarAtividades();
+function salvarAtividades() {
+  try { localStorage.setItem(chaveDoUsuario('atividades'), JSON.stringify(atividades)); } catch (erro) {}
+}
 
 function novoId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);

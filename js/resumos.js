@@ -14,17 +14,21 @@ const TIPOS_RESUMO = {
   exemplos: 'Exemplos práticos'
 };
 
-// ---------- Guardar e carregar ----------
+// ---------- Guardar e carregar (cada conta vê só os seus) ----------
 let resumosGuardados = [];
-try {
-  const dados = JSON.parse(localStorage.getItem('resumos'));
-  if (Array.isArray(dados)) resumosGuardados = dados;
-} catch (erro) {}
-function salvarResumos() {
-  try { localStorage.setItem('resumos', JSON.stringify(resumosGuardados)); } catch (erro) {}
-}
-
 let resumoAberto = null;   // resumo mostrado na tela agora
+function carregarResumos() {
+  resumosGuardados = [];
+  resumoAberto = null;
+  try {
+    const dados = JSON.parse(localStorage.getItem(chaveDoUsuario('resumos')));
+    if (Array.isArray(dados)) resumosGuardados = dados;
+  } catch (erro) {}
+}
+function salvarResumos() {
+  try { localStorage.setItem(chaveDoUsuario('resumos'), JSON.stringify(resumosGuardados)); } catch (erro) {}
+}
+aoTrocarConta(carregarResumos);
 
 // Transforma o texto da IA (## títulos, - listas, **negrito**) em HTML seguro
 function textoParaHtml(texto) {

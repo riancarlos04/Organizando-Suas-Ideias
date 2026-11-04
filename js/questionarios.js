@@ -11,25 +11,33 @@ const NOMES_DOS_TIPOS = { multipla: 'Múltipla escolha', vf: 'Verdadeiro ou fals
 const NOMES_DOS_NIVEIS = { facil: 'Fácil', medio: 'Médio', dificil: 'Difícil' };
 const LETRAS = ['A', 'B', 'C', 'D'];
 
-// ---------- Guardar e carregar ----------
+// ---------- Guardar e carregar (cada conta vê só os seus) ----------
 let questionariosFeitos = [];   // questionários terminados
 let emAndamento = null;         // questionário sendo respondido agora
-try {
-  const feitos = JSON.parse(localStorage.getItem('questionarios'));
-  if (Array.isArray(feitos)) questionariosFeitos = feitos;
-  emAndamento = JSON.parse(localStorage.getItem('questionario-atual'));
-} catch (erro) {}
+let resultadoAberto = null;     // questionário terminado que está na tela
+let corrigindo = false;
+
+function carregarQuestionarios() {
+  questionariosFeitos = [];
+  emAndamento = null;
+  resultadoAberto = null;
+  corrigindo = false;
+  try {
+    const feitos = JSON.parse(localStorage.getItem(chaveDoUsuario('questionarios')));
+    if (Array.isArray(feitos)) questionariosFeitos = feitos;
+    emAndamento = JSON.parse(localStorage.getItem(chaveDoUsuario('questionario-atual')));
+  } catch (erro) {}
+}
+aoTrocarConta(carregarQuestionarios);
+carregarQuestionarios();
 
 function salvarQuestionarios() {
   try {
-    localStorage.setItem('questionarios', JSON.stringify(questionariosFeitos));
-    if (emAndamento) localStorage.setItem('questionario-atual', JSON.stringify(emAndamento));
-    else localStorage.removeItem('questionario-atual');
+    localStorage.setItem(chaveDoUsuario('questionarios'), JSON.stringify(questionariosFeitos));
+    if (emAndamento) localStorage.setItem(chaveDoUsuario('questionario-atual'), JSON.stringify(emAndamento));
+    else localStorage.removeItem(chaveDoUsuario('questionario-atual'));
   } catch (erro) {}
 }
-
-let resultadoAberto = null;   // questionário terminado que está na tela
-let corrigindo = false;
 
 // Média dos questionários (usada no painel "Meu desempenho")
 function mediaDosQuestionarios() {

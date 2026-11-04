@@ -6,20 +6,26 @@
 // Usa dados de cronograma.js e metas.js.
 // =========================================================
 
-// ---------- Guardar e carregar ----------
+// ---------- Guardar e carregar (cada conta vê só as suas) ----------
 let sessoes = [];        // estudos já terminados: { materia, inicio, minutos }
 let sessaoAtual = null;  // estudo em andamento: { materia, inicio }
-try {
-  const guardadas = JSON.parse(localStorage.getItem('sessoes'));
-  if (Array.isArray(guardadas)) sessoes = guardadas;
-  sessaoAtual = JSON.parse(localStorage.getItem('sessao-atual'));
-} catch (erro) {}
+function carregarSessoes() {
+  sessoes = [];
+  sessaoAtual = null;
+  try {
+    const guardadas = JSON.parse(localStorage.getItem(chaveDoUsuario('sessoes')));
+    if (Array.isArray(guardadas)) sessoes = guardadas;
+    sessaoAtual = JSON.parse(localStorage.getItem(chaveDoUsuario('sessao-atual')));
+  } catch (erro) {}
+}
+aoTrocarConta(carregarSessoes);
+carregarSessoes();
 
 function salvarSessoes() {
   try {
-    localStorage.setItem('sessoes', JSON.stringify(sessoes));
-    if (sessaoAtual) localStorage.setItem('sessao-atual', JSON.stringify(sessaoAtual));
-    else localStorage.removeItem('sessao-atual');
+    localStorage.setItem(chaveDoUsuario('sessoes'), JSON.stringify(sessoes));
+    if (sessaoAtual) localStorage.setItem(chaveDoUsuario('sessao-atual'), JSON.stringify(sessaoAtual));
+    else localStorage.removeItem(chaveDoUsuario('sessao-atual'));
   } catch (erro) {}
 }
 

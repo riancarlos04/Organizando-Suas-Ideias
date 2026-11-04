@@ -76,7 +76,7 @@ async function login(dados, res) {
   }
 
   const token = jwt.sign({ sub: conta.id, papel: conta.papel, nome: conta.nome }, process.env.AUTH_JWT_SECRET, { expiresIn: VALIDADE_SESSAO });
-  res.status(200).json({ token: token, papel: conta.papel, nome: conta.nome });
+  res.status(200).json({ token: token, papel: conta.papel, nome: conta.nome, usuario_id: conta.id });
 }
 
 function sessao(req, res) {
