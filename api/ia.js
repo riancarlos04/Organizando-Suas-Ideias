@@ -172,9 +172,17 @@ function pedidoDeQuestionario(dados) {
   return pedidoDeQuestoes(dados, TIPOS_DO_ALUNO, 'Crie um questionário',
     'O aluno já respondeu as questões abaixo sobre esse assunto.');
 }
+// Tipos de material que o professor pode criar (Etapa 9: Criar prova)
+const MATERIAIS = {
+  prova: 'uma prova escrita',
+  simulado: 'um simulado',
+  exercicios: 'uma lista de exercícios',
+  recuperacao: 'uma atividade de recuperação'
+};
 function pedidoDeAtividade(dados) {
+  const material = MATERIAIS[dados.material] || 'uma atividade escrita';
   return pedidoDeQuestoes(dados, TIPOS_DO_PROFESSOR,
-    'Crie uma atividade escrita que o professor vai imprimir e entregar aos alunos',
+    'Crie ' + material + ' que o professor vai imprimir e entregar aos alunos',
     'O professor já usou as questões abaixo sobre esse assunto.');
 }
 

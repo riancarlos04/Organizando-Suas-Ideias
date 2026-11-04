@@ -59,7 +59,7 @@
     <nav class="menu-lateral" data-menu="professor" aria-label="Menu do professor">
       <a href="#/professor">Início</a>
       <a href="#/professor/atividade">Criar atividade</a>
-      <a href="#/professor/prova">Criar prova <small>Etapa 9</small></a>
+      <a href="#/professor/prova">Criar prova</a>
       <a href="#/professor/plano">Plano de aula <small>Etapa 9</small></a>
       <a href="#/professor/reforco">Reforço <small>Etapa 10</small></a>
       <a href="#/professor/notas">Notas e dificuldades <small>Etapa 10</small></a>
@@ -369,11 +369,30 @@
       <button type="button" class="botao-secundario" data-sair>Sair</button>
     </section>
 
-    <!-- ========== TELA: criar atividade (Etapa 8, ideia do EduFácil) ========== -->
+    <!-- ========== TELA: criar atividade (Etapa 8) e criar prova (Etapa 9), ideia do EduFácil ========== -->
     <section data-tela="professor/atividade" class="tela tela-resumos" id="tela-atividade" hidden>
-      <h1 tabindex="-1">Criar atividade</h1>
+      <h1 tabindex="-1" id="titulo-atividade">Criar atividade</h1>
 
       <form class="form-resumo" id="form-atividade">
+        <!-- Só aparece em "Criar prova" -->
+        <div class="campos-prova" id="campos-prova" hidden>
+          <label for="a-material">Tipo de material</label>
+          <select id="a-material">
+            <option value="prova">Prova</option>
+            <option value="simulado">Simulado</option>
+            <option value="exercicios">Exercícios</option>
+            <option value="recuperacao">Recuperação</option>
+          </select>
+
+          <label for="a-turma">Turma <small>(aparece na folha)</small></label>
+          <input id="a-turma" type="text" maxlength="30" placeholder="Ex.: 8º A" autocomplete="off">
+
+          <label for="a-valor">Valor total</label>
+          <input id="a-valor" type="number" min="0" max="100" step="0.5" value="10">
+
+          <label class="marcar" for="a-versoes"><input type="checkbox" id="a-versoes"> Fazer versões A e B (questões e alternativas embaralhadas)</label>
+        </div>
+
         <label for="a-materia">Matéria</label>
         <select id="a-materia"></select>
 
@@ -417,7 +436,7 @@
       <div id="atividade-area" aria-live="polite"></div>
 
       <section class="bloco">
-        <h2>Minhas atividades</h2>
+        <h2 id="titulo-lista-atividades">Minhas atividades</h2>
         <div id="lista-atividades"></div>
       </section>
     </section>

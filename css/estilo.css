@@ -584,6 +584,22 @@ a { color: var(--azul); }
 .gabarito-professor ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 .gabarito-professor p { margin: 0; }
 
+/* ---------- Prova (Etapa 9) ---------- */
+.campos-prova { display: grid; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--linha); margin-bottom: 4px; }
+.campos-prova > label:not(.marcar) { font-weight: 700; color: var(--roxo); margin-top: 4px; }
+.campos-prova input[type="number"] {
+  font: inherit; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--linha);
+  background: var(--branco); color: var(--preto); width: 8em;
+}
+.prova-config { display: grid; gap: 10px; padding: 12px 14px; border-radius: var(--raio); background: var(--roxo-claro); }
+.prova-config-linha { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; }
+.prova-config-linha > label:not(.marcar) { font-weight: 700; color: var(--roxo); }
+.prova-config select, .prova-config input[type="text"] { width: auto !important; flex: 1; min-width: 120px; }
+.prova-config input[type="number"] { width: 6em !important; }
+.valor-questao { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--roxo); }
+.valor-questao input { width: 5em !important; padding: 4px 8px !important; }
+.gabarito-versoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+
 /* ---------- Folha impressa: só aparece ao imprimir ---------- */
 #folha-impressao { display: none; }
 @media print {
@@ -596,6 +612,8 @@ a { color: var(--azul); }
   .folha-topo h1 { font-size: 13pt; margin: 0 0 3mm; }
   .folha-topo p { margin: 0; display: flex; gap: 6mm; align-items: baseline; }
   .folha-campo { flex: 1; border-bottom: 1px solid #000; }
+  .folha-topo .folha-prova { margin-top: 2mm; }
+  .folha + .folha { break-before: page; }   /* versão B começa numa folha nova */
   /* Duas colunas para gastar menos papel */
   .folha-questoes { column-count: 2; column-gap: 8mm; margin: 0; padding-left: 5mm; }
   .folha-questao { break-inside: avoid; margin-bottom: 4mm; }

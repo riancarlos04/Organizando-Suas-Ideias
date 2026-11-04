@@ -3,7 +3,7 @@
 Este arquivo guarda o contexto das conversas com o Claude, para continuar de onde paramos em qualquer computador.
 O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final de cada etapa.**
 
-Última atualização: 03/11/2026, depois da Etapa 10a (login real + aprovação por admin).
+Última atualização: 04/11/2026, depois da Etapa 9 (parte 1: Criar prova). O plano de aula espera o modelo da coordenadora.
 
 ## Quem é quem
 
@@ -82,7 +82,7 @@ O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final d
    - botão "Explicar mais simples";
    - pontos fracos no painel (erro = 2 pontos, pesquisa = 1 ponto), com a frase do slide: "Você apresenta maior dificuldade em…".
 8. **Professor: criar atividade** (`js/professor.js`, ideia do EduFácil):
-   - a área do professor pede o código dos professores;
+   - a área do professor exige login de professor (desde a Etapa 10a; antes era um código fixo);
    - a IA cria a atividade, ou o professor começa em branco;
    - 5 tipos: múltipla, V/F, discursiva, associação e interpretação de texto;
    - editor completo: mudar textos, apagar, adicionar e trocar uma questão pela IA;
@@ -99,10 +99,19 @@ O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final d
    - **Dados de teste antigos** (localStorage de testes anteriores à Etapa 10) foram perdidos de propósito — decisão combinada com o professor, sem migração automática.
    - **Pendente do professor, fora do código:** rodar `ferramentas/supabase.sql` no Supabase, configurar as novas variáveis na Vercel (ver seção "Onde fica cada coisa") e testar o fluxo completo (cadastro → aprovação → login) antes de levar para a escola.
 
+10. **Criar prova** (Etapa 9, parte 1, em 04/11/2026; decisões da dupla do Davison):
+   - usa a **mesma tela e o mesmo editor** de "Criar atividade" (`js/professor.js`). A rota `#/professor/prova` mostra a seção `professor/atividade` com `modoProfessor = 'prova'`;
+   - as provas ficam na mesma lista do `localStorage` das atividades, marcadas pelo campo `material`, e cada tela mostra só as suas;
+   - **tipo de material:** Prova, Simulado, Exercícios ou Recuperação (vai também para a IA, em `MATERIAIS` no `api/ia.js`);
+   - **turma** e **valor** de cada questão: o valor total (padrão 10, escolha provisória do Claude) é dividido igualmente e pode ser mudado questão a questão. A folha mostra Turma, Valor, Nota e "(X pt)" em cada questão;
+   - **versões A e B:** a B embaralha a ordem das questões, as alternativas e a coluna B da associação. A ordem fica guardada em `versaoB`, para a folha e o gabarito sempre baterem. Há o botão "Embaralhar a versão B de novo". A impressão sai a A e a B em páginas separadas, e o gabarito das duas fica no app.
+
 ## Em aberto
 
+- **Plano de aula (Etapa 9, parte 2):** o professor vai alinhar o modelo com a coordenadora e trazer. **Não inventar a estrutura**; esperar o modelo.
+- **Prévia online desatualizada:** desde o login, a área do professor e as telas do aluno só aparecem para quem está logado, e `window.MODO_PREVIA` não é mais usado. Para testar, o Claude simula `contaLogada` nas páginas de teste.
 - **Etapa 10b (ainda não feita):** migrar cronograma, metas, resumos, questionários feitos, pesquisas e atividades do `localStorage` para o Supabase, associados à conta logada. É o item de maior volume de trabalho que ficou de fora da 10a de propósito.
-- **Próxima etapa proposta depois da 10b: Etapa 9, Criar prova + Plano de aula** (perguntas para a dupla do Davison) — a ordem numérica ficou invertida porque o login (originalmente Etapa 10) foi priorizado a pedido do professor; ok manter os números como estão ou renumerar, perguntar antes de seguir.
+- **Perguntas levadas para a escola em 04/11/2026, ainda sem resposta:** as opções de tempo de estudo do perfil (Millena/Vanusa), se a atividade do professor chega ao aluno pelo app (turma) e a ordem entre a 10b e o resto (professor; o Claude sugeriu a 10b primeiro).
 - **Ordem proposta depois:** Etapa 11 (turmas: o professor manda a atividade e o aluno recebe; notas e dificuldades da turma).
 - **Ainda sem resposta:** se a atividade do professor chega ao aluno pelo app (por enquanto é só impressa) e se o modelo da IA será trocado.
 - **Opcionais no fim do ano:** correção de prova por foto (ideia do EduFácil) e apresentação final.
