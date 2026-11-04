@@ -1,25 +1,11 @@
 // =========================================================
-// Service worker: guarda os arquivos do site no celular
-// para ele abrir rápido e funcionar mesmo sem internet.
-// Sempre tenta a versão mais nova primeiro (internet) e só
-// usa a cópia guardada quando está sem conexão.
+// Service worker: só guarda os ícones e o manifest (arquivos
+// que quase nunca mudam). O HTML, o CSS e os scripts sempre
+// vêm direto da internet, para nunca misturar versões antigas
+// e novas do app depois de uma atualização.
 // =========================================================
-const CACHE = 'organizando-v18';
+const CACHE = 'organizando-v19';
 const ARQUIVOS = [
-  './',
-  'index.html',
-  'css/estilo.css',
-  'js/cronograma.js',
-  'js/metas.js',
-  'js/progresso.js',
-  'js/auth.js',
-  'js/ia.js',
-  'js/resumos.js',
-  'js/questionarios.js',
-  'js/perfil.js',
-  'js/professor.js',
-  'js/admin.js',
-  'js/app.js',
   'manifest.webmanifest',
   'icones/logo.png',
   'icones/icone-apple.png',
@@ -33,7 +19,7 @@ self.addEventListener('install', function (evento) {
 });
 
 self.addEventListener('activate', function (evento) {
-  // Apaga cópias de versões antigas
+  // Apaga cópias de versões antigas (inclusive do formato antigo, que guardava HTML/JS)
   evento.waitUntil(caches.keys().then(function (nomes) {
     return Promise.all(nomes.filter(function (n) { return n !== CACHE; }).map(function (n) { return caches.delete(n); }));
   }));
@@ -41,17 +27,10 @@ self.addEventListener('activate', function (evento) {
 });
 
 self.addEventListener('fetch', function (evento) {
-  // Pedidos para a IA (api/...) nunca são guardados
-  if (evento.request.method !== 'GET' || evento.request.url.indexOf('/api/') !== -1) return;
+  const url = evento.request.url;
+  const ehArquivoGuardado = evento.request.method === 'GET' && ARQUIVOS.some(function (a) { return url.indexOf(a) !== -1; });
+  if (!ehArquivoGuardado) return; // deixa o navegador buscar normalmente na internet
   evento.respondWith(
-    fetch(evento.request)
-      .then(function (resposta) {
-        const copia = resposta.clone();
-        caches.open(CACHE).then(function (cache) { cache.put(evento.request, copia); });
-        return resposta;
-      })
-      .catch(function () {
-        return caches.match(evento.request).then(function (r) { return r || caches.match('index.html'); });
-      })
+    caches.match(evento.request).then(function (r) { return r || fetch(evento.request); })
   );
 });
