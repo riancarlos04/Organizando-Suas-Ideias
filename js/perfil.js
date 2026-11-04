@@ -51,7 +51,7 @@ function registrarPesquisa(assunto, materia) {
 
 // ---------- Saudação ----------
 function atualizarSaudacao() {
-  const nome = sessaoAtual && sessaoAtual.nome;
+  const nome = contaLogada && contaLogada.nome;
   document.getElementById('saudacao-aluno').textContent = 'Olá, ' + (nome || 'estudante') + '!';
 }
 

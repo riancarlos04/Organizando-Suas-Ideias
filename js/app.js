@@ -141,7 +141,7 @@ function mostrarTela() {
 window.addEventListener('hashchange', mostrarTela);
 carregarSessao().catch(function (erro) {
   console.error('Falha ao verificar sessão:', erro);
-  sessaoAtual = null;
+  contaLogada = null;
   sessaoCarregada = true;
 }).then(mostrarTela);
 

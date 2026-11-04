@@ -7,7 +7,7 @@
 // A sessão fica guardada no aparelho como um token (JWT).
 // =========================================================
 
-let sessaoAtual = null;     // null (deslogado) ou { papel, nome, usuario_id }
+let contaLogada = null;     // null (deslogado) ou { papel, nome, usuario_id }
 let sessaoCarregada = false; // true depois da 1ª verificação (sucesso ou falha)
 
 function tokenSalvo() {
@@ -19,7 +19,7 @@ function tokenSalvo() {
 async function carregarSessao() {
   const token = tokenSalvo();
   if (!token || location.protocol === 'file:') {
-    sessaoAtual = null;
+    contaLogada = null;
     sessaoCarregada = true;
     return;
   }
@@ -33,14 +33,14 @@ async function carregarSessao() {
       signal: controle.signal
     });
     if (resposta.ok) {
-      sessaoAtual = await resposta.json();
+      contaLogada = await resposta.json();
     } else {
       guardar('sessao-token', '');
-      sessaoAtual = null;
+      contaLogada = null;
     }
   } catch (erro) {
     // Sem internet ou demorou demais: trata como deslogado por agora, sem apagar o token salvo.
-    sessaoAtual = null;
+    contaLogada = null;
   } finally {
     clearTimeout(tempoLimite);
   }
@@ -48,15 +48,15 @@ async function carregarSessao() {
 }
 
 function estaLogado(papel) {
-  return !!(sessaoAtual && sessaoAtual.papel === papel);
+  return !!(contaLogada && contaLogada.papel === papel);
 }
 function ehAdmin() {
-  return !!(sessaoAtual && sessaoAtual.papel === 'admin');
+  return !!(contaLogada && contaLogada.papel === 'admin');
 }
 
 function encerrarSessao() {
   guardar('sessao-token', '');
-  sessaoAtual = null;
+  contaLogada = null;
   location.hash = '#/inicio';
 }
 
@@ -129,7 +129,7 @@ async function entrar(papel, usuario, senha, aviso, avisoPendente) {
       return false;
     }
     guardar('sessao-token', json.token);
-    sessaoAtual = { papel: json.papel, nome: json.nome };
+    contaLogada = { papel: json.papel, nome: json.nome };
     location.hash = json.papel === 'admin' ? '#/admin' : '#/' + papel;
     return true;
   } catch (erro) {
