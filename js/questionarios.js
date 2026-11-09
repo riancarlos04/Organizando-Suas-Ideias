@@ -5,6 +5,7 @@
 // discursivas; as outras o próprio app corrige.
 // Ao final: acertos, temas para estudar mais e (com gabarito)
 // cada questão com a resposta certa e a explicação.
+// Guardado no Supabase (Etapa 10b), sincroniza entre aparelhos.
 // =========================================================
 
 const NOMES_DOS_TIPOS = { multipla: 'Múltipla escolha', vf: 'Verdadeiro ou falso', discursiva: 'Discursiva' };
@@ -16,27 +17,40 @@ let questionariosFeitos = [];   // questionários terminados
 let emAndamento = null;         // questionário sendo respondido agora
 let resultadoAberto = null;     // questionário terminado que está na tela
 let corrigindo = false;
+let questionariosCarregando = false;
 
-function carregarQuestionarios() {
+async function carregarQuestionarios() {
   questionariosFeitos = [];
   emAndamento = null;
   resultadoAberto = null;
   corrigindo = false;
+  questionariosCarregando = true;
   try {
-    const feitos = JSON.parse(localStorage.getItem(chaveDoUsuario('questionarios')));
-    if (Array.isArray(feitos)) questionariosFeitos = feitos;
-    emAndamento = JSON.parse(localStorage.getItem(chaveDoUsuario('questionario-atual')));
-  } catch (erro) {}
+    const [respFeitos, respAndamento] = await Promise.all([
+      pedirDados('questionarios', 'listar'),
+      pedirDados('questionarios', 'obterEmAndamento')
+    ]);
+    questionariosFeitos = respFeitos.questionarios || [];
+    emAndamento = respAndamento.emAndamento || null;
+  } catch (erro) { /* fica vazio; a tela mostra erro se tentar usar */ }
+  questionariosCarregando = false;
+  if (location.hash === '#/aluno/questionarios') desenharQuestionarios();
 }
 aoTrocarConta(carregarQuestionarios);
-carregarQuestionarios();
 
-function salvarQuestionarios() {
+// Salva o questionário em andamento (debounce para as respostas digitadas)
+let timerSalvarAndamento = null;
+async function salvarEmAndamentoAgora() {
+  clearTimeout(timerSalvarAndamento);
+  timerSalvarAndamento = null;
   try {
-    localStorage.setItem(chaveDoUsuario('questionarios'), JSON.stringify(questionariosFeitos));
-    if (emAndamento) localStorage.setItem(chaveDoUsuario('questionario-atual'), JSON.stringify(emAndamento));
-    else localStorage.removeItem(chaveDoUsuario('questionario-atual'));
-  } catch (erro) {}
+    if (emAndamento) await pedirDados('questionarios', 'salvarEmAndamento', { emAndamento: emAndamento });
+    else await pedirDados('questionarios', 'removerEmAndamento');
+  } catch (erro) { /* próxima digitação tenta salvar de novo */ }
+}
+function salvarEmAndamentoComAtraso() {
+  clearTimeout(timerSalvarAndamento);
+  timerSalvarAndamento = setTimeout(salvarEmAndamentoAgora, 1000);
 }
 
 // Média dos questionários (usada no painel "Meu desempenho")
@@ -83,7 +97,7 @@ async function gerarQuestionario(pedido) {
       questoes: resposta.dados.questoes,
       respostas: resposta.dados.questoes.map(function () { return null; })
     };
-    salvarQuestionarios();
+    salvarEmAndamentoAgora();
     if (emAndamento.materia && !sessaoAtual) comecarEstudo(emAndamento.materia);
     desenharQuestionarios();
     document.getElementById('questionario-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -128,7 +142,8 @@ function desenharRespondendo() {
   document.getElementById('questionario-area').innerHTML = html;
 }
 
-// Guarda cada resposta assim que o aluno marca ou digita
+// Guarda cada resposta assim que o aluno marca ou digita (com atraso nas
+// discursivas, para não virar uma requisição por tecla)
 function guardarResposta(campo) {
   if (!emAndamento || !campo.name || campo.name.indexOf('q-') !== 0) return;
   const i = Number(campo.name.slice(2));
@@ -136,7 +151,7 @@ function guardarResposta(campo) {
   if (tipo === 'multipla') emAndamento.respostas[i] = Number(campo.value);
   else if (tipo === 'vf') emAndamento.respostas[i] = campo.value === 'true';
   else emAndamento.respostas[i] = campo.value;
-  salvarQuestionarios();
+  salvarEmAndamentoComAtraso();
 }
 
 // ---------- Corrigir ----------
@@ -195,7 +210,8 @@ async function terminarQuestionario() {
   questionariosFeitos.push(feito);
   emAndamento = null;
   corrigindo = false;
-  salvarQuestionarios();
+  pedirDados('questionarios', 'criar', { questionario: feito }).catch(function (erro) { mostrarMensagem('Não foi possível guardar', erro.message); });
+  pedirDados('questionarios', 'removerEmAndamento').catch(function (erro) {});
   resultadoAberto = feito;
   desenharQuestionarios();
   document.getElementById('questionario-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -265,6 +281,10 @@ function desenharResultado() {
 // ---------- Tela ----------
 function desenharListaQuestionarios() {
   const lista = document.getElementById('lista-questionarios');
+  if (questionariosCarregando) {
+    lista.innerHTML = '<p class="carregando">Carregando questionários…</p>';
+    return;
+  }
   if (!questionariosFeitos.length) {
     lista.innerHTML = '<p class="sem-assunto">Nenhum questionário feito ainda.</p>';
     return;
@@ -331,7 +351,7 @@ telaQuestionarios.addEventListener('click', function (evento) {
   if (!alvo) return;
   if (alvo.hasAttribute('data-desistir')) {
     emAndamento = null;
-    salvarQuestionarios();
+    salvarEmAndamentoAgora();
     desenharQuestionarios();
   } else if (alvo.hasAttribute('data-fechar-resultado')) {
     resultadoAberto = null;
@@ -346,7 +366,7 @@ telaQuestionarios.addEventListener('click', function (evento) {
   } else if (alvo.dataset.removerQuestionario) {
     questionariosFeitos = questionariosFeitos.filter(function (q) { return q.id !== alvo.dataset.removerQuestionario; });
     if (resultadoAberto && resultadoAberto.id === alvo.dataset.removerQuestionario) resultadoAberto = null;
-    salvarQuestionarios();
+    pedirDados('questionarios', 'remover', { id: alvo.dataset.removerQuestionario }).catch(function (erro) { mostrarMensagem('Não foi possível remover', erro.message); });
     desenharQuestionarios();
   } else if (alvo.dataset.resumoTema) {
     // "Ver resumo": abre os Resumos com o tema preenchido

@@ -3,6 +3,7 @@
 // O aluno escreve um assunto e/ou cola um texto, escolhe o
 // tipo de resumo e a IA escreve. Ele decide se guarda ou não.
 // Abrir ou gerar um resumo com matéria inicia o cronômetro.
+// Os resumos guardados ficam no Supabase (Etapa 10b).
 // =========================================================
 
 const TIPOS_RESUMO = {
@@ -17,16 +18,17 @@ const TIPOS_RESUMO = {
 // ---------- Guardar e carregar (cada conta vê só os seus) ----------
 let resumosGuardados = [];
 let resumoAberto = null;   // resumo mostrado na tela agora
-function carregarResumos() {
+let resumosCarregando = false;
+async function carregarResumos() {
   resumosGuardados = [];
   resumoAberto = null;
+  resumosCarregando = true;
   try {
-    const dados = JSON.parse(localStorage.getItem(chaveDoUsuario('resumos')));
-    if (Array.isArray(dados)) resumosGuardados = dados;
-  } catch (erro) {}
-}
-function salvarResumos() {
-  try { localStorage.setItem(chaveDoUsuario('resumos'), JSON.stringify(resumosGuardados)); } catch (erro) {}
+    const resposta = await pedirDados('resumos', 'listar');
+    resumosGuardados = resposta.resumos || [];
+  } catch (erro) { /* fica vazio; a tela mostra erro se tentar usar */ }
+  resumosCarregando = false;
+  if (location.hash === '#/aluno/resumos') desenharResumos();
 }
 aoTrocarConta(carregarResumos);
 
@@ -78,6 +80,10 @@ function desenharResumoAberto() {
 
 function desenharListaResumos() {
   const lista = document.getElementById('lista-resumos');
+  if (resumosCarregando) {
+    lista.innerHTML = '<p class="carregando">Carregando resumos…</p>';
+    return;
+  }
   if (!resumosGuardados.length) {
     lista.innerHTML = '<p class="sem-assunto">Nenhum resumo guardado ainda.</p>';
     return;
@@ -163,7 +169,7 @@ document.getElementById('tela-resumos').addEventListener('click', function (even
     gerarResumo(Object.assign({}, resumoAberto.pedido, { simplificar: true }));
   } else if (alvo.hasAttribute('data-guardar-resumo')) {
     resumosGuardados.push(resumoAberto);
-    salvarResumos();
+    pedirDados('resumos', 'criar', { resumo: resumoAberto }).catch(function (erro) { mostrarMensagem('Não foi possível guardar', erro.message); });
     resumoAberto = null;
     desenharResumos();
     mostrarMensagem('Resumo guardado', 'Ele está em "Meus resumos".');
@@ -178,7 +184,7 @@ document.getElementById('tela-resumos').addEventListener('click', function (even
   } else if (alvo.dataset.removerResumo) {
     resumosGuardados = resumosGuardados.filter(function (r) { return r.id !== alvo.dataset.removerResumo; });
     if (resumoAberto && resumoAberto.id === alvo.dataset.removerResumo) resumoAberto = null;
-    salvarResumos();
+    pedirDados('resumos', 'remover', { id: alvo.dataset.removerResumo }).catch(function (erro) { mostrarMensagem('Não foi possível remover', erro.message); });
     desenharResumos();
   }
 });

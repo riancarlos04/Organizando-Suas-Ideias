@@ -14,17 +14,9 @@ function tokenSalvo() {
   return ler('sessao-token');
 }
 
-// Prefixo para cada chave do localStorage, para os dados de uma conta nunca
-// aparecerem para outra conta no mesmo aparelho. Sem login, cai num espaço
-// "convidado" (comportamento de antes da Etapa 10, só para não quebrar nada).
-function chaveDoUsuario(nome) {
-  const id = contaLogada && contaLogada.usuario_id;
-  return (id || 'convidado') + '-' + nome;
-}
-
 // Módulos de dados (resumos.js, cronograma.js, etc.) registram aqui como
-// recarregar os dados do localStorage quando a conta logada for conhecida
-// ou mudar (login, logout).
+// recarregar os dados do Supabase quando a conta logada for conhecida
+// ou mudar (login, logout) — Etapa 10b.
 const RECARREGAR_AO_TROCAR_CONTA = [];
 function aoTrocarConta(funcao) {
   RECARREGAR_AO_TROCAR_CONTA.push(funcao);
@@ -65,6 +57,34 @@ async function carregarSessao() {
   }
   sessaoCarregada = true;
   recarregarDadosDaConta();
+}
+
+// Fala com api/dados.js (cronograma, metas, resumos, questionários, perfil,
+// pesquisas, atividades, sessões de estudo — Etapa 10b). Sempre manda o
+// token da sessão; sem ele a função serverless recusa o pedido.
+async function pedirDados(recurso, acao, dados) {
+  if (location.protocol === 'file:') {
+    throw new Error('Isso só funciona no site publicado na Vercel.');
+  }
+  let resposta;
+  try {
+    resposta = await fetch('api/dados', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tokenSalvo() },
+      body: JSON.stringify(Object.assign({ recurso: recurso, acao: acao }, dados || {}))
+    });
+  } catch (erro) {
+    throw new Error('Não deu para falar com o servidor. Confira a internet.');
+  }
+  const json = await resposta.json().catch(function () { return {}; });
+  if (resposta.status === 401) {
+    encerrarSessao();
+    throw new Error(json.erro || 'Sua sessão expirou. Entre de novo.');
+  }
+  if (!resposta.ok) {
+    throw new Error(json.erro || 'Não foi possível completar essa ação.');
+  }
+  return json;
 }
 
 function estaLogado(papel) {

@@ -2,7 +2,7 @@
 // Cronograma de estudos (Etapa 2)
 // O aluno escolhe os dias de cada matéria e cadastra os assuntos.
 // Ao estudar um assunto, marca e ele fica riscado.
-// Tudo fica guardado só no aparelho (localStorage).
+// Guardado no Supabase (Etapa 10b), sincroniza entre aparelhos.
 // =========================================================
 
 // Matérias da escola (escolhidas por Millena e Vanusa)
@@ -20,23 +20,34 @@ const DIAS = [
   { numero: 0, curto: 'Dom', longo: 'Domingo' }
 ];
 
-// ---------- Guardar e carregar (cada conta vê só o seu) ----------
-function dadosDoCronograma() {
-  let dados = null;
-  try { dados = JSON.parse(localStorage.getItem(chaveDoUsuario('cronograma'))); } catch (erro) {}
-  if (!dados || !dados.materias) dados = { materias: {} };
+// ---------- Guardar e carregar (cada conta vê só o seu, sincroniza entre aparelhos) ----------
+function completarMaterias(materias) {
   MATERIAS.forEach(function (materia) {
-    if (!dados.materias[materia]) dados.materias[materia] = { dias: [], assuntos: [] };
+    if (!materias[materia]) materias[materia] = { dias: [], assuntos: [] };
   });
-  return dados;
+  return materias;
 }
-function salvarCronograma() {
-  try { localStorage.setItem(chaveDoUsuario('cronograma'), JSON.stringify(cronograma)); } catch (erro) {}
+let cronogramaCarregando = false;
+async function salvarCronograma() {
+  try {
+    await pedirDados('cronograma', 'salvar', { materias: cronograma.materias });
+  } catch (erro) {
+    mostrarMensagem('Não foi possível salvar', erro.message);
+  }
 }
 
 const cronograma = { materias: {} };
-function carregarCronograma() {
-  cronograma.materias = dadosDoCronograma().materias;
+async function carregarCronograma() {
+  cronograma.materias = {};
+  cronogramaCarregando = true;
+  try {
+    const resposta = await pedirDados('cronograma', 'obter');
+    cronograma.materias = completarMaterias(resposta.materias || {});
+  } catch (erro) {
+    completarMaterias(cronograma.materias);
+  }
+  cronogramaCarregando = false;
+  if (location.hash === '#/aluno/cronograma') desenharCronograma();
 }
 aoTrocarConta(carregarCronograma);
 carregarCronograma();
@@ -64,6 +75,11 @@ function acharAssunto(materia, id) {
 
 // ---------- Desenhar a tela ----------
 function desenharCronograma() {
+  if (cronogramaCarregando) {
+    document.getElementById('painel-semana').innerHTML = '<p class="carregando">Carregando cronograma…</p>';
+    document.getElementById('painel-materias').innerHTML = '';
+    return;
+  }
   ['semana', 'materias'].forEach(function (aba) {
     document.getElementById('aba-' + aba).setAttribute('aria-selected', aba === abaAtual);
     document.getElementById('painel-' + aba).hidden = aba !== abaAtual;

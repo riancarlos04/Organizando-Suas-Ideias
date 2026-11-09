@@ -5,7 +5,7 @@
 //   login (Etapa 10). O nome vem da conta, não deste formulário.
 // - O perfil vai junto nos pedidos à IA, para ela adaptar a explicação
 // - Pontos fracos: erros nos questionários + assuntos mais pesquisados
-// Tudo fica guardado só no aparelho.
+// Guardado no Supabase (Etapa 10b), sincroniza entre aparelhos.
 // =========================================================
 
 const OPCOES_NIVEL_ENSINO = [
@@ -17,22 +17,32 @@ const OPCOES_NIVEL_ENSINO = [
 // ---------- Guardar e carregar (cada conta vê só o seu) ----------
 let perfilAluno = null;   // { nivelEnsino, objetivo, conhecimento, tempo }
 let pesquisas = [];       // { assunto, materia, data }
-function carregarPerfil() {
+// Enquanto carrega, temPerfilAluno() finge que tem perfil (evita o gate de
+// app.js mandar o aluno pro cadastro antes de saber se ele já respondeu).
+let perfilCarregando = false;
+async function carregarPerfil() {
   perfilAluno = null;
   pesquisas = [];
+  perfilCarregando = true;
   try {
-    perfilAluno = JSON.parse(localStorage.getItem(chaveDoUsuario('perfil-aluno')));
-    const guardadas = JSON.parse(localStorage.getItem(chaveDoUsuario('pesquisas')));
-    if (Array.isArray(guardadas)) pesquisas = guardadas;
-  } catch (erro) {}
+    const [respPerfil, respPesquisas] = await Promise.all([
+      pedirDados('perfil', 'obter'),
+      pedirDados('pesquisas', 'listar')
+    ]);
+    perfilAluno = respPerfil.perfil || null;
+    pesquisas = respPesquisas.pesquisas || [];
+  } catch (erro) { /* fica vazio; a tela mostra erro se tentar usar */ }
+  perfilCarregando = false;
+  // Agora que sabemos de verdade, deixa o gate de app.js decidir de novo.
+  if (typeof mostrarTela === 'function') mostrarTela();
 }
 aoTrocarConta(carregarPerfil);
-carregarPerfil();
 
-function salvarPerfil() {
-  try { localStorage.setItem(chaveDoUsuario('perfil-aluno'), JSON.stringify(perfilAluno)); } catch (erro) {}
+async function salvarPerfil() {
+  try { await pedirDados('perfil', 'salvar', { perfil: perfilAluno }); } catch (erro) { mostrarMensagem('Não foi possível salvar', erro.message); }
 }
 function temPerfilAluno() {
+  if (perfilCarregando) return true;
   return !!(perfilAluno && perfilAluno.nivelEnsino);
 }
 
@@ -48,11 +58,12 @@ function perfilParaIA(nivelEscolhido) {
 }
 
 // Cada resumo ou questionário pedido conta como uma pesquisa
-function registrarPesquisa(assunto, materia) {
+async function registrarPesquisa(assunto, materia) {
   if (!assunto) return;
-  pesquisas.push({ assunto: assunto, materia: materia || '', data: dataDeHoje() });
+  const pesquisa = { assunto: assunto, materia: materia || '', data: dataDeHoje() };
+  pesquisas.push(pesquisa);
   pesquisas = pesquisas.slice(-200);
-  try { localStorage.setItem(chaveDoUsuario('pesquisas'), JSON.stringify(pesquisas)); } catch (erro) {}
+  try { await pedirDados('pesquisas', 'registrar', pesquisa); } catch (erro) { /* não é crítico: só afeta "pontos fracos" */ }
 }
 
 // ---------- Saudação ----------

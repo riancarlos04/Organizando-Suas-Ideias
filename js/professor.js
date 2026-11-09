@@ -6,7 +6,8 @@
 // - Prova: tipo de material, turma, valor de cada questão,
 //   nota total e versões A e B embaralhadas
 // - O gabarito fica só no app
-// Tudo fica guardado no aparelho do professor.
+// Guardado no Supabase (Etapa 10b): a digitação no editor salva com um
+// pequeno atraso (debounce), para não virar uma requisição por tecla.
 // =========================================================
 
 const TIPOS_ATIVIDADE = {
@@ -32,18 +33,38 @@ let modoProfessor = 'atividade';
 // Provas ficam na mesma lista; elas têm o campo "material".
 let atividades = [];
 let atividadeAberta = null;
-function carregarAtividades() {
+let atividadesCarregando = false;
+async function carregarAtividades() {
   atividades = [];
   atividadeAberta = null;
+  atividadesCarregando = true;
   try {
-    const guardadas = JSON.parse(localStorage.getItem(chaveDoUsuario('atividades')));
-    if (Array.isArray(guardadas)) atividades = guardadas;
-  } catch (erro) {}
+    const resposta = await pedirDados('atividades', 'listar');
+    atividades = resposta.atividades || [];
+  } catch (erro) { /* fica vazio; a tela mostra erro se tentar usar */ }
+  atividadesCarregando = false;
+  if (location.hash.indexOf('professor/atividade') !== -1 || location.hash.indexOf('professor/prova') !== -1) desenharAtividades();
 }
 aoTrocarConta(carregarAtividades);
-carregarAtividades();
+
+// Criar/remover atividade salva na hora. Editar campo a campo (aoEditar)
+// usa atraso, para não virar uma requisição por tecla.
+async function criarAtividade(atividade) {
+  try { await pedirDados('atividades', 'criar', { atividade: atividade }); } catch (erro) { mostrarMensagem('Não foi possível guardar', erro.message); }
+}
+async function removerAtividade(id) {
+  try { await pedirDados('atividades', 'remover', { id: id }); } catch (erro) { mostrarMensagem('Não foi possível remover', erro.message); }
+}
+let timerSalvarAtividade = null;
+async function salvarAtividadeAgora() {
+  clearTimeout(timerSalvarAtividade);
+  timerSalvarAtividade = null;
+  if (!atividadeAberta) return;
+  try { await pedirDados('atividades', 'atualizar', { atividade: atividadeAberta }); } catch (erro) { /* a próxima edição tenta salvar de novo */ }
+}
 function salvarAtividades() {
-  try { localStorage.setItem(chaveDoUsuario('atividades'), JSON.stringify(atividades)); } catch (erro) {}
+  clearTimeout(timerSalvarAtividade);
+  timerSalvarAtividade = setTimeout(salvarAtividadeAgora, 1000);
 }
 
 function novoId() {
@@ -166,7 +187,7 @@ function abrirNovaAtividade(dados, questoes) {
     distribuirValor(atividadeAberta, dados.valorTotal);
   }
   atividades.push(atividadeAberta);
-  salvarAtividades();
+  criarAtividade(atividadeAberta);
   desenharAtividades(modoProfessor);
   document.getElementById('atividade-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -356,7 +377,7 @@ function desenharGabarito() {
       ? '<div class="gabarito-versoes"><div>' + listaDeGabarito(a, 'A', 'Gabarito · Versão A') + '</div><div>' + listaDeGabarito(a, 'B', 'Gabarito · Versão B') + '</div></div>'
       : listaDeGabarito(a, null, 'Gabarito')) +
     '</section>';
-  salvarAtividades();   // a versão B pode ter acabado de ser sorteada
+  salvarAtividadeAgora();   // a versão B pode ter acabado de ser sorteada
   area.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -399,7 +420,7 @@ function imprimirAtividade() {
   const a = atividadeAberta;
   // Com versões, sai a A e depois a B, cada uma começando numa folha nova
   document.getElementById('folha-impressao').innerHTML = temVersoes(a) ? montarFolha(a, 'A') + montarFolha(a, 'B') : montarFolha(a, null);
-  salvarAtividades();
+  salvarAtividadeAgora();   // a versão sorteada precisa estar guardada antes de imprimir
   window.print();
 }
 
@@ -439,6 +460,10 @@ function doModoAtual(a) {
 
 function desenharListaAtividades() {
   const lista = document.getElementById('lista-atividades');
+  if (atividadesCarregando) {
+    lista.innerHTML = '<p class="carregando">Carregando…</p>';
+    return;
+  }
   const doModo = atividades.filter(doModoAtual);
   if (!doModo.length) {
     lista.innerHTML = '<p class="sem-assunto">' + (modoProfessor === 'prova' ? 'Nenhuma prova criada ainda.' : 'Nenhuma atividade criada ainda.') + '</p>';
@@ -555,16 +580,22 @@ telaAtividade.addEventListener('click', function (evento) {
   } else if (alvo.hasAttribute('data-ver-gabarito')) {
     desenharGabarito();
   } else if (alvo.hasAttribute('data-fechar-atividade')) {
+    salvarAtividadeAgora();
     atividadeAberta = null;
     desenharAtividades();
   } else if (alvo.dataset.abrirAtividade) {
+    salvarAtividadeAgora();
     atividadeAberta = atividades.find(function (x) { return x.id === alvo.dataset.abrirAtividade; });
     desenharAtividades();
     document.getElementById('atividade-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } else if (alvo.dataset.removerAtividade) {
     atividades = atividades.filter(function (x) { return x.id !== alvo.dataset.removerAtividade; });
-    if (atividadeAberta && atividadeAberta.id === alvo.dataset.removerAtividade) atividadeAberta = null;
-    salvarAtividades();
+    if (atividadeAberta && atividadeAberta.id === alvo.dataset.removerAtividade) { atividadeAberta = null; clearTimeout(timerSalvarAtividade); timerSalvarAtividade = null; }
+    removerAtividade(alvo.dataset.removerAtividade);
     desenharAtividades();
   }
 });
+
+// Não perder a última edição: salva na hora ao sair da tela ou fechar a aba
+window.addEventListener('hashchange', salvarAtividadeAgora);
+window.addEventListener('beforeunload', salvarAtividadeAgora);

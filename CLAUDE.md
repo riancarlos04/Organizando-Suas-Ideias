@@ -3,7 +3,7 @@
 Este arquivo guarda o contexto das conversas com o Claude, para continuar de onde paramos em qualquer computador.
 O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final de cada etapa.**
 
-Última atualização: 04/11/2026, depois da Etapa 9 (parte 1: Criar prova). O plano de aula espera o modelo da coordenadora.
+Última atualização: 09/11/2026, depois da Etapa 10b (dados de estudo migrados para o Supabase). O plano de aula (Etapa 9, parte 2) espera o modelo da coordenadora.
 
 ## Quem é quem
 
@@ -26,18 +26,23 @@ O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final d
 - **GitHub:** https://github.com/riancarlos04/Organizando-Suas-Ideias (branch `main`)
 - **Site:** publicado na Vercel (conta do professor), que atualiza sozinha a cada push.
 - **Prévia online** (feita pelo Claude): https://claude.ai/artifact/3abr9rkBYjinFFVFNSmHay. Ela é gerada com `ferramentas/gerar-previa.ps1`, que junta tudo num HTML só. Na prévia a IA não funciona e a área do professor fica aberta (`window.MODO_PREVIA`). **Pendência:** a prévia ainda não foi atualizada para o novo fluxo de login da Etapa 10; hoje ela pode não refletir as telas de entrar/cadastro/admin.
-- **Banco de dados:** Supabase (projeto já criado pelo professor). Só a tabela `usuarios` existe até agora (script em `ferramentas/supabase.sql`). Cronograma/metas/resumos/questionários/atividades continuam no `localStorage`, não no banco.
+- **Banco de dados:** Supabase (projeto já criado pelo professor). Tabela `usuarios` (script em `ferramentas/supabase.sql`) e, desde a Etapa 10b, mais 10 tabelas de dados de estudo (script em `ferramentas/supabase-etapa-10b.sql`): `cronograma`, `metas`, `resumos`, `questionarios_feitos`, `questionario_em_andamento`, `perfil_aluno`, `pesquisas`, `atividades`, `sessoes_estudo`, `sessao_em_andamento`.
 - **Variáveis na Vercel:** `OPENAI_API_KEY`, `OPENAI_MODELO` (opcional; padrão `gpt-4o-mini`), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (nunca a `anon`), `AUTH_JWT_SECRET` (string aleatória inventada, não vem do Supabase). As variáveis antigas `CODIGO_ESCOLA` e `CODIGO_PROFESSOR` foram removidas do código e devem ser apagadas da Vercel.
 
 ## Tecnologia
 
 - HTML, CSS e JavaScript puros, sem ferramentas de build, para a turma conseguir ler o código. É um PWA instalável (`manifest.webmanifest`, `sw.js`). Desde a Etapa 10a, o `sw.js` só guarda em cache os ícones/manifest — HTML, CSS e JS sempre vêm direto da internet, para nunca misturar versão antiga com nova depois de um deploy (um bug assim travou o app na tela de abertura logo depois do primeiro deploy da Etapa 10). Ainda assim, **aumentar a versão do `CACHE` no `sw.js`** se algum dia voltar a guardar mais arquivos.
-- Os dados de estudo (cronograma, metas, resumos, questionários, atividades) ficam no `localStorage` de cada aparelho. As **contas** (usuário, senha, aprovação) ficam no Supabase, desde a Etapa 10a.
+- Os dados de estudo (cronograma, metas, resumos, questionários, perfil educacional, pesquisas, atividades/provas, sessões de estudo) ficam no Supabase desde a Etapa 10b, associados ao `usuario_id` da conta — sincronizam entre aparelhos. As **contas** (usuário, senha, aprovação) ficam no Supabase desde a Etapa 10a.
 - A IA é a OpenAI, chamada só pela função da Vercel `api/ia.js`. A chave nunca vai para o navegador. O app manda uma **"tarefa"** e o servidor monta o pedido; não existe chat livre.
 - Login (Etapa 10a): nome de usuário + senha (sem e-mail), para aluno e professor. Tabela própria `usuarios` no Supabase (não usa o Supabase Auth nativo), com hash bcrypt da senha. Login emite um JWT próprio (`api/auth.js`, segredo em `AUTH_JWT_SECRET`), guardado no navegador em `localStorage` (`sessao-token`). Todo cadastro novo nasce com `status: 'pendente'` e só funciona depois que um **admin** aprovar em `#/admin` (`api/admin.js`). O client nunca fala direto com o Supabase — só pelas funções `api/*.js`, que usam a chave `service_role` (nunca exposta ao navegador).
 - O papel **admin** é separado de aluno/professor. Não tem tela de login própria: se o usuário+senha digitado em `#/aluno/entrar` OU `#/professor/entrar` pertencer a uma conta admin, o app abre `#/admin` em vez da área normal.
-- Ordem dos scripts no `index.html`: **auth** → cronograma → metas → progresso → ia → resumos → questionarios → perfil → professor → admin → app. `auth.js` precisa vir primeiro porque define `chaveDoUsuario()` e `aoTrocarConta()`, usadas por todos os módulos de dados.
-- **Dados por conta (correção depois da Etapa 10a):** cronograma, metas, resumos, questionários, perfil educacional, pesquisas e atividades ficam no `localStorage`, mas cada chave é prefixada com `chaveDoUsuario('nome')` (definida em `js/auth.js`), que usa o `usuario_id` da conta logada (ou `'convidado'` se ninguém estiver logado). Sem isso, dois alunos no mesmo navegador viam os dados um do outro — foi um bug real encontrado em teste, não só uma limitação teórica. Cada módulo registra uma função de recarregamento em `aoTrocarConta()`, disparada após login, logout e na checagem de sessão do boot. **Continua tudo no aparelho** (não sincroniza entre aparelhos) — isso só muda na Etapa 10b, quando esses dados forem para o Supabase.
+- Ordem dos scripts no `index.html`: **auth** → cronograma → metas → progresso → ia → resumos → questionarios → perfil → professor → admin → app. `auth.js` precisa vir primeiro porque define `pedirDados()` e `aoTrocarConta()`, usadas por todos os módulos de dados.
+- **Dados de estudo no Supabase (Etapa 10b):** `api/dados.js` é o único endpoint para cronograma, metas, resumos, questionários, perfil, pesquisas, atividades e sessões de estudo — roteado por `{ recurso, acao }` no corpo, igual ao dicionário de tarefas de `api/ia.js`. Nunca confia em `usuario_id` vindo do cliente; usa sempre o `sub` do JWT validado no servidor. Cada módulo JS (`cronograma.js`, `metas.js`, etc.) chama `pedirDados(recurso, acao, dados)` (definida em `js/auth.js`) e registra sua função de recarregamento em `aoTrocarConta()`, disparada após login, logout e na checagem de sessão do boot — assim os dados trocam junto quando a conta muda, e sincronizam entre aparelhos (celular, computador) porque não dependem mais do `localStorage`.
+  - **Cronograma, perfil educacional, questionário em andamento e sessão em andamento** são "documento único por aluno" (upsert: 1 linha na tabela, sobrescrita inteira a cada salvamento) — reflete como o código já tratava esses dados antes (salvava o objeto inteiro).
+  - **Metas, resumos, questionários feitos, atividades, pesquisas e sessões de estudo terminadas** são coleções (1 linha por item), com ações `listar`/`criar`/`atualizar`/`remover`.
+  - **Editor de atividades/provas** (`aoEditar` em `professor.js`) salva com atraso de ~1s depois de parar de digitar (debounce), para não virar uma requisição por tecla; força um salvamento imediato ao trocar de questão/tela/fechar a aba, e antes de imprimir ou ver o gabarito (a versão B sorteada precisa estar salva). O campo de resposta discursiva em questionários usa o mesmo debounce.
+  - Sem suporte offline nesta etapa: toda leitura/escrita exige internet; sem conexão, mostra erro (como já acontece com a IA). Sem lógica de resolver conflito entre aparelhos (a última escrita vence) — risco baixo dado o padrão de uso.
+  - Enquanto os dados carregam, cada tela mostra "Carregando…"; o gate de `app.js` que decide se o aluno precisa completar o perfil (`temPerfilAluno()`) finge que já tem perfil durante o carregamento, para não mandar o aluno pro cadastro à toa antes de saber a resposta real.
 - Navegação por `#/rota` em `js/app.js` (`mostrarTela`).
 - **Testes sem IA:** o Claude cria páginas no scratchpad com a prévia mais um `pedirIA` falso e abre no Edge sem janela (headless). Neste PC: o Python é só um atalho da loja; o Bash não roda `.ps1`, então scripts PowerShell rodam pela ferramenta PowerShell; o Git roda pelo Bash.
 
@@ -101,17 +106,22 @@ O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final d
 
 10. **Criar prova** (Etapa 9, parte 1, em 04/11/2026; decisões da dupla do Davison):
    - usa a **mesma tela e o mesmo editor** de "Criar atividade" (`js/professor.js`). A rota `#/professor/prova` mostra a seção `professor/atividade` com `modoProfessor = 'prova'`;
-   - as provas ficam na mesma lista do `localStorage` das atividades, marcadas pelo campo `material`, e cada tela mostra só as suas;
+   - as provas ficam na mesma tabela `atividades` do Supabase, marcadas pelo campo `material`, e cada tela mostra só as suas;
    - **tipo de material:** Prova, Simulado, Exercícios ou Recuperação (vai também para a IA, em `MATERIAIS` no `api/ia.js`);
    - **turma** e **valor** de cada questão: o valor total (padrão 10, escolha provisória do Claude) é dividido igualmente e pode ser mudado questão a questão. A folha mostra Turma, Valor, Nota e "(X pt)" em cada questão;
    - **versões A e B:** a B embaralha a ordem das questões, as alternativas e a coluna B da associação. A ordem fica guardada em `versaoB`, para a folha e o gabarito sempre baterem. Há o botão "Embaralhar a versão B de novo". A impressão sai a A e a B em páginas separadas, e o gabarito das duas fica no app.
+11. **Dados de estudo no Supabase** (Etapa 10b, em 09/11/2026):
+   - cronograma, metas, resumos, questionários (feitos e em andamento), perfil educacional, pesquisas, atividades/provas e sessões de estudo (incluindo o cronômetro em andamento) saem do `localStorage` e passam a viver no Supabase, associados à conta logada — sincronizam entre aparelhos (celular, computador);
+   - novo `api/dados.js` (único endpoint para os 8 recursos) e `js/auth.js` ganhou `pedirDados()`;
+   - **Escopo fechado:** só os dados de estudo listados acima. Sem suporte offline e sem resolução de conflito entre aparelhos (decisões já tomadas, ver seção "Tecnologia");
+   - **Dados de teste antigos** (localStorage de antes da 10b) foram perdidos de propósito, sem migração automática — mesma decisão já tomada na 10a;
+   - **Pendente do professor, fora do código:** rodar `ferramentas/supabase-etapa-10b.sql` no Supabase (depois de já ter rodado `supabase.sql`) e testar o fluxo completo em dois aparelhos diferentes, logado na mesma conta, para confirmar a sincronização.
 
 ## Em aberto
 
 - **Plano de aula (Etapa 9, parte 2):** o professor vai alinhar o modelo com a coordenadora e trazer. **Não inventar a estrutura**; esperar o modelo.
-- **Prévia online desatualizada:** desde o login, a área do professor e as telas do aluno só aparecem para quem está logado, e `window.MODO_PREVIA` não é mais usado. Para testar, o Claude simula `contaLogada` nas páginas de teste.
-- **Etapa 10b (ainda não feita):** migrar cronograma, metas, resumos, questionários feitos, pesquisas e atividades do `localStorage` para o Supabase, associados à conta logada. É o item de maior volume de trabalho que ficou de fora da 10a de propósito.
-- **Perguntas levadas para a escola em 04/11/2026, ainda sem resposta:** as opções de tempo de estudo do perfil (Millena/Vanusa), se a atividade do professor chega ao aluno pelo app (turma) e a ordem entre a 10b e o resto (professor; o Claude sugeriu a 10b primeiro).
+- **Prévia online desatualizada:** desde o login, a área do professor e as telas do aluno só aparecem para quem está logado, e `window.MODO_PREVIA` não é mais usado. Para testar, o Claude simula `contaLogada` nas páginas de teste — e agora também precisa simular as respostas de `api/dados.js`, já que não há mais fallback de `localStorage`.
+- **Perguntas levadas para a escola em 04/11/2026, ainda sem resposta:** as opções de tempo de estudo do perfil (Millena/Vanusa) e se a atividade do professor chega ao aluno pelo app (turma).
 - **Ordem proposta depois:** Etapa 11 (turmas: o professor manda a atividade e o aluno recebe; notas e dificuldades da turma).
 - **Ainda sem resposta:** se a atividade do professor chega ao aluno pelo app (por enquanto é só impressa) e se o modelo da IA será trocado.
 - **Opcionais no fim do ano:** correção de prova por foto (ideia do EduFácil) e apresentação final.

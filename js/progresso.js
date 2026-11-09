@@ -3,30 +3,36 @@
 // - Progresso geral = assuntos riscados + metas cumpridas
 // - Cronômetro: o aluno começa a estudar uma matéria e toca
 //   em "Terminei" no final; o tempo fica guardado.
-// Usa dados de cronograma.js e metas.js.
+// Usa dados de cronograma.js e metas.js. Guardado no Supabase (Etapa 10b).
 // =========================================================
 
 // ---------- Guardar e carregar (cada conta vê só as suas) ----------
 let sessoes = [];        // estudos já terminados: { materia, inicio, minutos }
 let sessaoAtual = null;  // estudo em andamento: { materia, inicio }
-function carregarSessoes() {
+async function carregarSessoes() {
   sessoes = [];
   sessaoAtual = null;
   try {
-    const guardadas = JSON.parse(localStorage.getItem(chaveDoUsuario('sessoes')));
-    if (Array.isArray(guardadas)) sessoes = guardadas;
-    sessaoAtual = JSON.parse(localStorage.getItem(chaveDoUsuario('sessao-atual')));
-  } catch (erro) {}
+    const [respSessoes, respAndamento] = await Promise.all([
+      pedirDados('sessoes', 'listar'),
+      pedirDados('sessoes', 'obterEmAndamento')
+    ]);
+    sessoes = respSessoes.sessoes || [];
+    sessaoAtual = respAndamento.emAndamento || null;
+  } catch (erro) { /* fica vazio */ }
+  mostrarCronometro();
+  redesenharTelaAtual();
 }
 aoTrocarConta(carregarSessoes);
-carregarSessoes();
 
-function salvarSessoes() {
+async function registrarSessaoEstudo(sessao) {
+  try { await pedirDados('sessoes', 'criar', { sessao: sessao }); } catch (erro) { /* fica só no histórico local */ }
+}
+async function salvarSessaoEmAndamento() {
   try {
-    localStorage.setItem(chaveDoUsuario('sessoes'), JSON.stringify(sessoes));
-    if (sessaoAtual) localStorage.setItem(chaveDoUsuario('sessao-atual'), JSON.stringify(sessaoAtual));
-    else localStorage.removeItem(chaveDoUsuario('sessao-atual'));
-  } catch (erro) {}
+    if (sessaoAtual) await pedirDados('sessoes', 'salvarEmAndamento', { emAndamento: sessaoAtual });
+    else await pedirDados('sessoes', 'removerEmAndamento');
+  } catch (erro) { /* o cronômetro continua funcionando localmente */ }
 }
 
 // ---------- Progresso geral (mostrado só no painel "Meu desempenho") ----------
@@ -75,7 +81,7 @@ function formatarRelogio(milissegundos) {
 function comecarEstudo(materia) {
   if (sessaoAtual || MATERIAS.indexOf(materia) === -1) return;
   sessaoAtual = { materia: materia, inicio: Date.now() };
-  salvarSessoes();
+  salvarSessaoEmAndamento();
   mostrarCronometro();
   redesenharTelaAtual();
 }
@@ -83,13 +89,15 @@ function terminarEstudo(contarTempo) {
   if (!sessaoAtual) return;
   const minutos = Math.round((Date.now() - sessaoAtual.inicio) / 60000);
   if (contarTempo && minutos >= 1) {
-    sessoes.push({ materia: sessaoAtual.materia, inicio: sessaoAtual.inicio, minutos: minutos });
+    const sessao = { materia: sessaoAtual.materia, inicio: sessaoAtual.inicio, minutos: minutos };
+    sessoes.push(sessao);
+    registrarSessaoEstudo(sessao);
     mostrarMensagem('Estudo registrado', 'Você estudou ' + formatarTempo(minutos) + ' de ' + sessaoAtual.materia + '.');
   } else if (contarTempo) {
     mostrarMensagem('Estudo não contado', 'O estudo durou menos de 1 minuto.');
   }
   sessaoAtual = null;
-  salvarSessoes();
+  salvarSessaoEmAndamento();
   mostrarCronometro();
   redesenharTelaAtual();
 }

@@ -2,24 +2,33 @@
 // Metas (Etapa 3)
 // O aluno escreve suas metas, com prazo se quiser, e marca
 // quando cumprir. Aí aparece a mensagem de parabéns.
+// Guardado no Supabase (Etapa 10b), sincroniza entre aparelhos.
 // =========================================================
 
 // ---------- Guardar e carregar (cada conta vê só as suas) ----------
-function dadosDasMetas() {
-  try {
-    const dados = JSON.parse(localStorage.getItem(chaveDoUsuario('metas')));
-    if (Array.isArray(dados)) return dados;
-  } catch (erro) {}
-  return [];
-}
-function salvarMetas() {
-  try { localStorage.setItem(chaveDoUsuario('metas'), JSON.stringify(metas)); } catch (erro) {}
-}
-
 let metas = [];
-function carregarMetas() { metas = dadosDasMetas(); }
+let metasCarregando = false;
+async function carregarMetas() {
+  metas = [];
+  metasCarregando = true;
+  try {
+    const resposta = await pedirDados('metas', 'listar');
+    metas = resposta.metas || [];
+  } catch (erro) { /* fica vazio; a tela mostra erro se tentar usar */ }
+  metasCarregando = false;
+  if (location.hash === '#/aluno/metas') desenharMetas();
+}
 aoTrocarConta(carregarMetas);
-carregarMetas();
+
+async function criarMeta(meta) {
+  try { await pedirDados('metas', 'criar', { meta: meta }); } catch (erro) { mostrarMensagem('Não foi possível criar', erro.message); }
+}
+async function atualizarMeta(id, feita) {
+  try { await pedirDados('metas', 'atualizar', { id: id, feita: feita }); } catch (erro) { mostrarMensagem('Não foi possível salvar', erro.message); }
+}
+async function removerMeta(id) {
+  try { await pedirDados('metas', 'remover', { id: id }); } catch (erro) { mostrarMensagem('Não foi possível remover', erro.message); }
+}
 
 // ---------- Datas ----------
 // Datas ficam guardadas como texto "2026-10-25" (ano-mês-dia)
@@ -58,6 +67,10 @@ function itemDeMeta(meta) {
 
 // ---------- Tela "Minhas metas" ----------
 function desenharMetas() {
+  if (metasCarregando) {
+    document.getElementById('lista-metas').innerHTML = '<p class="carregando">Carregando metas…</p>';
+    return;
+  }
   const pendentes = metasPendentes();
   const cumpridas = metas.filter(function (m) { return m.feita; });
   let html = '<h2>Para cumprir</h2>';
@@ -96,7 +109,7 @@ listaMetas.addEventListener('change', function (evento) {
   const meta = metas.find(function (m) { return m.id === caixa.dataset.meta; });
   if (!meta) return;
   meta.feita = caixa.checked;
-  salvarMetas();
+  atualizarMeta(meta.id, meta.feita);
   desenharMetas();
   if (meta.feita) mostrarMensagem('Parabéns!', 'Você cumpriu sua meta: ' + meta.texto);
   focar(caixa.id);
@@ -106,7 +119,7 @@ listaMetas.addEventListener('click', function (evento) {
   const alvo = evento.target.closest('[data-remover-meta]');
   if (!alvo) return;
   metas = metas.filter(function (m) { return m.id !== alvo.dataset.removerMeta; });
-  salvarMetas();
+  removerMeta(alvo.dataset.removerMeta);
   desenharMetas();
   focar('meta-texto');
 });
@@ -125,13 +138,14 @@ document.getElementById('form-meta').addEventListener('submit', function (evento
   const campoTexto = document.getElementById('meta-texto');
   const texto = campoTexto.value.trim();
   if (!texto) return;
-  metas.push({
+  const meta = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     texto: texto,
     prazo: marcaPrazo.checked && campoPrazo.value ? campoPrazo.value : null,
     feita: false
-  });
-  salvarMetas();
+  };
+  metas.push(meta);
+  criarMeta(meta);
   campoTexto.value = '';
   marcaPrazo.checked = false;
   campoPrazo.hidden = true;
