@@ -119,7 +119,8 @@ O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final d
 
 ## Em aberto
 
-- **Plano de aula (Etapa 9, parte 2):** o professor vai alinhar o modelo com a coordenadora e trazer. **Não inventar a estrutura**; esperar o modelo.
+- **Prioridade combinada em 09/11/2026:** focar no que falta do lado do **aluno**. A parte do professor (plano de aula, Etapa 9 parte 2) fica pausada por enquanto. Do lado do aluno, as funcionalidades centrais da ideia original (cronograma, metas, progresso, resumos, questionários, perfil) já estão todas prontas — a próxima peça grande é a Etapa 11 (turmas), mas ela depende da resposta sobre atividades chegarem pelo app (pergunta abaixo). **Decisão: esperar a resposta da escola antes de avançar em algo novo do lado do aluno.**
+- **Plano de aula (Etapa 9, parte 2) — pausado:** o professor vai alinhar o modelo com a coordenadora e trazer. **Não inventar a estrutura**; esperar o modelo.
 - **Prévia online desatualizada:** desde o login, a área do professor e as telas do aluno só aparecem para quem está logado, e `window.MODO_PREVIA` não é mais usado. Para testar, o Claude simula `contaLogada` nas páginas de teste — e agora também precisa simular as respostas de `api/dados.js`, já que não há mais fallback de `localStorage`.
 - **Perguntas levadas para a escola em 04/11/2026, ainda sem resposta:** as opções de tempo de estudo do perfil (Millena/Vanusa) e se a atividade do professor chega ao aluno pelo app (turma).
 - **Ordem proposta depois:** Etapa 11 (turmas: o professor manda a atividade e o aluno recebe; notas e dificuldades da turma).
