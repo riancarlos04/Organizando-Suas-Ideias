@@ -5,10 +5,13 @@
 // =========================================================
 
 // Itens do menu que ainda não funcionam: em qual etapa cada um será construído
+// A área do professor está pausada por enquanto (foco no lado do aluno).
 const EM_BREVE = {
-  'professor/plano':     { titulo: 'Plano de aula', etapa: 'Etapa 9' },
-  'professor/reforco':   { titulo: 'Reforço', etapa: 'Etapa 10' },
-  'professor/notas':     { titulo: 'Notas e dificuldades', etapa: 'Etapa 10' }
+  'professor/atividade': { titulo: 'Criar atividade', etapa: 'Em breve' },
+  'professor/prova':     { titulo: 'Criar prova', etapa: 'Em breve' },
+  'professor/plano':     { titulo: 'Plano de aula', etapa: 'Em breve' },
+  'professor/reforco':   { titulo: 'Reforço', etapa: 'Em breve' },
+  'professor/notas':     { titulo: 'Notas e dificuldades', etapa: 'Em breve' }
 };
 
 // Guarda informações no próprio aparelho (não vai para nenhum servidor)
