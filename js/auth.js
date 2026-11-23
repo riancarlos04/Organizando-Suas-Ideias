@@ -173,6 +173,7 @@ async function entrar(papel, usuario, senha, aviso, avisoPendente) {
     contaLogada = { papel: json.papel, nome: json.nome, usuario_id: json.usuario_id };
     recarregarDadosDaConta();
     location.hash = json.papel === 'admin' ? '#/admin' : '#/' + papel;
+    if (typeof mostrarAvisoInstalar === 'function') mostrarAvisoInstalar();
     return true;
   } catch (erro) {
     aviso.textContent = 'Não deu para falar com o servidor. Confira a internet.';
