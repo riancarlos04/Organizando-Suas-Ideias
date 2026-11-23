@@ -30,6 +30,9 @@ function linhaPendente(u) {
   return '<li class="pendente-linha">' +
     '<div><strong>' + seguro(u.nome) + '</strong> <span class="rotulo">' + NOMES_DO_PAPEL[u.papel] + '</span></div>' +
     '<p>Usuário: ' + seguro(u.usuario) + ' · Cadastrado em ' + formatarDataHora(u.criado_em) + '</p>' +
+    (u.papel === 'aluno'
+      ? '<label class="marcar"><input type="checkbox" data-criador="' + seguro(u.id) + '"> Idealizadora do app</label>'
+      : '') +
     '<div class="resumo-botoes">' +
     '<button type="button" class="botao-acao" data-aprovar="' + seguro(u.id) + '">Aprovar</button>' +
     '<button type="button" class="botao-secundario" data-rejeitar="' + seguro(u.id) + '">Rejeitar</button>' +
@@ -56,9 +59,10 @@ document.getElementById('painel-admin').addEventListener('click', async function
   const acao = alvo.hasAttribute('data-aprovar') ? 'aprovar' : alvo.hasAttribute('data-rejeitar') ? 'rejeitar' : null;
   if (!acao) return;
   const usuarioId = alvo.dataset.aprovar || alvo.dataset.rejeitar;
+  const checkboxCriador = alvo.closest('li').querySelector('[data-criador]');
   alvo.disabled = true;
   try {
-    await pedirAdmin({ acao: acao, usuario_id: usuarioId });
+    await pedirAdmin({ acao: acao, usuario_id: usuarioId, criador: !!(checkboxCriador && checkboxCriador.checked) });
     desenharAdmin();
   } catch (erro) {
     alvo.disabled = false;

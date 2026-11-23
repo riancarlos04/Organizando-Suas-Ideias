@@ -51,6 +51,7 @@ async function definirStatus(dados, status, adminId, res) {
   if (status === 'aprovado') {
     atualizacao.aprovado_em = new Date().toISOString();
     atualizacao.aprovado_por = adminId;
+    if (dados.criador === true) atualizacao.criador = true;
   }
   const { error } = await db.from('usuarios').update(atualizacao).eq('id', usuarioId);
   if (error) {

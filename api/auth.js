@@ -75,8 +75,8 @@ async function login(dados, res) {
     return;
   }
 
-  const token = jwt.sign({ sub: conta.id, papel: conta.papel, nome: conta.nome }, process.env.AUTH_JWT_SECRET, { expiresIn: VALIDADE_SESSAO });
-  res.status(200).json({ token: token, papel: conta.papel, nome: conta.nome, usuario_id: conta.id });
+  const token = jwt.sign({ sub: conta.id, papel: conta.papel, nome: conta.nome, criador: !!conta.criador }, process.env.AUTH_JWT_SECRET, { expiresIn: VALIDADE_SESSAO });
+  res.status(200).json({ token: token, papel: conta.papel, nome: conta.nome, usuario_id: conta.id, criador: !!conta.criador });
 }
 
 function sessao(req, res) {
@@ -88,7 +88,7 @@ function sessao(req, res) {
   }
   try {
     const dados = jwt.verify(token, process.env.AUTH_JWT_SECRET);
-    res.status(200).json({ papel: dados.papel, nome: dados.nome, usuario_id: dados.sub });
+    res.status(200).json({ papel: dados.papel, nome: dados.nome, usuario_id: dados.sub, criador: !!dados.criador });
   } catch (erro) {
     res.status(401).json({ erro: 'Sessão expirada. Entre de novo.' });
   }

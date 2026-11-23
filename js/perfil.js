@@ -70,6 +70,7 @@ async function registrarPesquisa(assunto, materia) {
 function atualizarSaudacao() {
   const nome = contaLogada && contaLogada.nome;
   document.getElementById('saudacao-aluno').textContent = 'Olá, ' + (nome || 'estudante') + '!';
+  document.getElementById('selo-criador').hidden = !(contaLogada && contaLogada.criador);
 }
 
 // ---------- Tela "Meu perfil" (também é o cadastro rápido) ----------

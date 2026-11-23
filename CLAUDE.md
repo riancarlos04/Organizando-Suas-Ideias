@@ -3,7 +3,7 @@
 Este arquivo guarda o contexto das conversas com o Claude, para continuar de onde paramos em qualquer computador.
 O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final de cada etapa.**
 
-Última atualização: 09/11/2026, depois da Etapa 10b (dados de estudo migrados para o Supabase). O plano de aula (Etapa 9, parte 2) espera o modelo da coordenadora.
+Última atualização: 10/11/2026: área do professor pausada na interface, rodapé trocado e selo "Idealizadora do app" criado para Millena e Vanusa. O plano de aula (Etapa 9, parte 2) espera o modelo da coordenadora.
 
 ## Quem é quem
 
@@ -124,6 +124,8 @@ O Claude Code lê este arquivo sozinho ao abrir a pasta. **Atualize-o ao final d
 - **Plano de aula (Etapa 9, parte 2) — pausado:** o professor vai alinhar o modelo com a coordenadora e trazer. **Não inventar a estrutura**; esperar o modelo.
 - **Prévia online desatualizada:** desde o login, a área do professor e as telas do aluno só aparecem para quem está logado, e `window.MODO_PREVIA` não é mais usado. Para testar, o Claude simula `contaLogada` nas páginas de teste — e agora também precisa simular as respostas de `api/dados.js`, já que não há mais fallback de `localStorage`.
 - **Perguntas levadas para a escola em 04/11/2026, ainda sem resposta:** as opções de tempo de estudo do perfil (Millena/Vanusa) e se a atividade do professor chega ao aluno pelo app (turma).
+- **Selo "Idealizadora do app" (10/11/2026):** Millena e Vanusa vão se cadastrar como alunas em 11/11/2026. Coluna `criador` (boolean) na tabela `usuarios` (`ferramentas/supabase-selo-criador.sql`). No painel admin (`js/admin.js`), cada cadastro pendente de **aluno** tem um checkbox "Idealizadora do app"; se marcado ao clicar em Aprovar, a conta fica com `criador: true` para sempre (não detectado pelo nome digitado, para não poder ser forjado). `criador` viaja no login e na checagem de sessão (`api/auth.js`) e no JWT. Na tela inicial do aluno, se `contaLogada.criador` for `true`, aparece um selo roxo "✨ Idealizadora do app" abaixo do "Olá, [nome]!" (`js/perfil.js`, `atualizarSaudacao()`). **Pendente do professor:** rodar `ferramentas/supabase-selo-criador.sql` no Supabase antes de aprovar as contas delas, e marcar o checkbox na hora de aprovar.
+- **Rodapé simplificado (10/11/2026):** trocado "Projeto da Turma A... / Versão de teste · Etapa X" por uma linha fixa: "Desenvolvido por Millena Vitória e Vanusa Macedo, com colaboração da Turma A".
 - **Ordem proposta depois:** Etapa 11 (turmas: o professor manda a atividade e o aluno recebe; notas e dificuldades da turma).
 - **Ainda sem resposta:** se a atividade do professor chega ao aluno pelo app (por enquanto é só impressa) e se o modelo da IA será trocado.
 - **Opcionais no fim do ano:** correção de prova por foto (ideia do EduFácil) e apresentação final.
